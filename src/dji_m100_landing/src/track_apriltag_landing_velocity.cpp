@@ -265,7 +265,6 @@ int main(int argc, char **argv)
   			}
   			else{
   				control_z_msg.data = std::max(0.0, local_z-1.0);
-    			//control_z_msg.data = local_z;
   			}
         double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
         double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
@@ -273,23 +272,6 @@ int main(int argc, char **argv)
         setpoint_y = delta_y + local_y;
         setpoint_yaw = yaw_state + yaw_error;
         setpoint_yaw = 90;
-
-        // Set the Joy message and publish to flight_control_setpoint_ENUposition_yaw topic
-
-        // setpoint_yaw = 0;
-
-        // setpoint_x_msg.data = 0;
-        // setpoint_y_msg.data = 0.5;
-        // double delta_x = local_x - setpoint_x_msg.data;
-        // double delta_y = local_y - setpoint_y_msg.data;
-        //
-        // if(sqrt(pow(delta_x, 2) + pow(delta_y, 2)) > 0.15)
-  			// {
-  			// 	control_z_msg.data = local_z;
-  			// }
-  			// else{
-  			// 	control_z_msg.data = std::max(0.0, local_z-1.0);
-  			// }
 
         setpoint_yaw_msg.data = setpoint_yaw;
         setpoint_x_msg.data = setpoint_x;
@@ -311,10 +293,10 @@ int main(int argc, char **argv)
         z_state_pub.publish(z_state_msg);
         yaw_state_pub.publish(yaw_state_msg);
 
-				ROS_INFO_STREAM("setpoint_x: " << setpoint_x_msg.data << " setpoint_y: " << setpoint_y_msg.data);
-        ROS_INFO_STREAM("local_x: " << local_x << " local_y: " << local_y);
-        ROS_INFO_STREAM("delta_x: " << delta_x << " delta_y: " << delta_y);
-        ROS_INFO_STREAM("yaw_state: " << yaw_state_msg.data << " yaw_error: " << yaw_error);
+				// ROS_INFO_STREAM("setpoint_x: " << setpoint_x_msg.data << " setpoint_y: " << setpoint_y_msg.data);
+        // ROS_INFO_STREAM("local_x: " << local_x << " local_y: " << local_y);
+        // ROS_INFO_STREAM("delta_x: " << delta_x << " delta_y: " << delta_y);
+        // ROS_INFO_STREAM("yaw_state: " << yaw_state_msg.data << " yaw_error: " << yaw_error);
       }
 
       loop_rate.sleep();

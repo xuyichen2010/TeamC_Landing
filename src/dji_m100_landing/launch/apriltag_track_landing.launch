@@ -22,6 +22,8 @@
     </include>
 
     <node pkg="tf" type="static_transform_publisher" name="usb_to_base" args="0 0 -0.1 -0.7071068 0.7071068 0 0 /usb_cam /base_link 100"/> 
+   
+    <node pkg="landing_starter" type="landing_starter" name="landing_starter" output="screen"/>
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_x_controller" pkg="pid" type="controller">
       <param name="node_name" value="apriltag_tracking_x_controller" />

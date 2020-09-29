@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="landing_starter" type="landing_starter" name="landing_starter" output="screen"/>
+
+</launch>
