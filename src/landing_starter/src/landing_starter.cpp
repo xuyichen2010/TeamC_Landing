@@ -62,9 +62,9 @@ int main(int argc, char** argv) {
 	{
 		ros::spinOnce();
     sensor_msgs::Joy controlPosYaw;
-    controlPosYaw.axes.push_back(0.1);
-    controlPosYaw.axes.push_back(0.1);
-    controlPosYaw.axes.push_back(4.0);
+    controlPosYaw.axes.push_back(0.0);
+    controlPosYaw.axes.push_back(0.0);
+    controlPosYaw.axes.push_back(3.6);
     controlPosYaw.axes.push_back(1.6);
     ctrlPosYawPub.publish(controlPosYaw);
     r.sleep();
@@ -75,11 +75,9 @@ int main(int argc, char** argv) {
 
 void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
   local_position = *msg;
-  if (local_position.point.x >= 0.5 && local_position.point.y >= 0.5 && local_position.point.z >= 3.9){
+  if (local_position.point.z >= 3.5){
         destination_reached = true;
       }
-  ROS_INFO_STREAM("local_position.point.x: " << local_position.point.x << " local_position.point.y: " << local_position.point.y);
-  ROS_INFO_STREAM("local_position.point.z: " << local_position.point.z << " destination_reached: " << destination_reached);
 }
 
 void flight_status_callback(const std_msgs::UInt8::ConstPtr& msg)
