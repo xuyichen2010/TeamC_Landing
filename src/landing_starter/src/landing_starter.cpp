@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     controlPosYaw.axes.push_back(0.0);
     controlPosYaw.axes.push_back(0.0);
     controlPosYaw.axes.push_back(3.6);
-    controlPosYaw.axes.push_back(1.6);
+    controlPosYaw.axes.push_back(0.0);
     ctrlPosYawPub.publish(controlPosYaw);
     r.sleep();
   }

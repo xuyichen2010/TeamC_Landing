@@ -1,4 +1,3 @@
-
 #include <ros/ros.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PointStamped.h>
@@ -119,7 +118,7 @@ void apriltags36h11Callback(const apriltag_ros::AprilTagDetectionArray::ConstPtr
   if(std::begin(apriltag_pos_msg->detections) == std::end(apriltag_pos_msg->detections))
   {
     found_36h11 = false;
-    return;
+    // return;
   }
   else
   {
@@ -132,6 +131,7 @@ void apriltags36h11Callback(const apriltag_ros::AprilTagDetectionArray::ConstPtr
       }
     }
   }
+  found_36h11 = true;
 }
 
 void localPositionCallback(const geometry_msgs::PointStamped::ConstPtr& local_position_msg)
@@ -139,6 +139,13 @@ void localPositionCallback(const geometry_msgs::PointStamped::ConstPtr& local_po
   local_x = local_position_msg->point.x;
   local_y = local_position_msg->point.y;
   local_z = local_position_msg->point.z;
+  ROS_INFO_STREAM("local_x: " << local_x << " local_y: " << local_y);
+  if (!target_captured) {
+            target_x = local_x;
+            target_y = local_y;
+            target_captured = true;
+            ROS_INFO_ONCE("Target is captured!");
+  }
 }
 
 void attitudeQuaternionCallback(const geometry_msgs::QuaternionStamped::ConstPtr& attitude_quaternion_msg)
@@ -280,13 +287,14 @@ int main(int argc, char **argv)
         //double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
         //double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
 
-
+	/*
         if (curr_error < 0.02 && !target_captured) {
             target_x = local_x;
             target_y = local_y;
             target_captured = true;
             ROS_INFO_ONCE("Target is captured!");
         }
+	*/
 
         if(target_captured){
           setpoint_x = target_x;
@@ -299,11 +307,11 @@ int main(int argc, char **argv)
 
         //setpoint_x = delta_x + local_x;
         //setpoint_y = delta_y + local_y;
-
-        // setpoint_x = 0;
-        // setpoint_y = 0;
-        setpoint_yaw = yaw_state + yaw_error;
-        setpoint_yaw = 90;
+	//
+	setpoint_x = 0;
+        setpoint_y = 0;
+        //setpoint_yaw = yaw_state + yaw_error;
+        setpoint_yaw = 0;
 
         setpoint_yaw_msg.data = setpoint_yaw;
         setpoint_x_msg.data = setpoint_x;

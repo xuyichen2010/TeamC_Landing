@@ -95,7 +95,8 @@ void velocityControlEffortYawCallback(std_msgs::Float64 velocity_control_effort_
 }
 
 void foundapriltagCallback(const std_msgs::Bool& found_tag_msg){
-	found_tag = found_tag_msg.data;
+	//found_tag = found_tag_msg.data;
+	found_tag = true;
 }
 
 void landingEnableCallback(const std_msgs::Bool& landing_enable_msg)
@@ -174,9 +175,8 @@ int main(int argc, char **argv)
 				controlRPzY.axes.push_back(control_effort_z);
 				controlRPzY.axes.push_back(velocity_control_effort_yaw);
 				ctrlRPYPub.publish(controlRPzY);
-
-				//ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
-				//ROS_INFO_STREAM("effort_z: " << descending_speed << " effort_yaw: " << velocity_control_effort_yaw);
+				ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
+				ROS_INFO_STREAM("effort_z: " << descending_speed << " effort_yaw: " << velocity_control_effort_yaw);
 
 				during_landing = true;
 				continue_landing = true;

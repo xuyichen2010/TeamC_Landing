@@ -7,7 +7,7 @@
       </node>
 
   <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
-    <param name="video_device" value="/dev/video1" />
+    <param name="video_device" value="/dev/video0" />
     <param name="image_width" value="640" />
     <param name="image_height" value="480" />
     <param name="pixel_format" value="yuyv" />
@@ -15,19 +15,20 @@
     <param name="io_method" value="mmap"/>
   </node>
      
-    <!--
+   
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
  		<arg name="image_rect_topic" default="/usb_cam/image_rect" />
 		<arg name="camera_info_topic" default="/usb_cam/camera_info" />
 		<arg name="camera_frame" default="usb_cam" />
     </include>
-    -->
-
+   
+   <!--
    <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
  		<arg name="image_rect_topic" default="/guidance_down/left/image_rect" />
 		<arg name="camera_info_topic" default="/guidance_down/left/camera_info" />
 		<arg name="camera_frame" default="guidance_down" />
     </include>
+    -->
 
     <node pkg="tf" type="static_transform_publisher" name="usb_to_base" args="0 0 -0.1 -0.7071068 0.7071068 0 0 /usb_cam /base_link 100"/> 
    
@@ -38,10 +39,10 @@
       <param name="node_name" value="apriltag_tracking_x_controller" />
       <param name="Kp" value="12" />
       <param name="Ki" value="0" />
-      <param name="Kd" value="40" />
+      <param name="Kd" value="60" />
       <param name="converge_threshold" value="0.05" />
-      <param name="upper_limit" value="0.03" />
-      <param name="lower_limit" value="-0.03" />
+      <param name="upper_limit" value="0.01" />
+      <param name="lower_limit" value="-0.01" />
       <param name="windup_limit" value="20" />
       <param name="cutoff_frequency" value="20" />
       <param name="diagnostic_period" value="0.25" />
@@ -56,10 +57,10 @@
       <param name="node_name" value="apriltag_tracking_y_controller" />
       <param name="Kp" value="12" />
       <param name="Ki" value="0" />
-      <param name="Kd" value="40" />
+      <param name="Kd" value="60" />
       <param name="converge_threshold" value="0.05" />
-      <param name="upper_limit" value="0.03" />
-      <param name="lower_limit" value="-0.03" />
+      <param name="upper_limit" value="0.01" />
+      <param name="lower_limit" value="-0.01" />
       <param name="windup_limit" value="10" />
       <param name="cutoff_frequency" value="20" />
       <param name="max_loop_frequency" value="105.0" />
