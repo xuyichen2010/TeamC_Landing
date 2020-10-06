@@ -1,17 +1,13 @@
 <launch>
-<!--
+
   <node name="vel_x_plot"
         pkg="rqt_plot"
         type="rqt_plot"
-        args="/teamc/position_track_x/control_effort /teamc/position_track_x/setpoint  /teamc/position_track_x/state"/> -->
+        args="/teamc/position_track_x/control_effort /teamc/position_track_x/setpoint  /teamc/position_track_x/state"/> 
+<!--
   <node name="vel_y_plot"
         pkg="rqt_plot"
         type="rqt_plot"
-        args="/teamc/position_track_y/control_effort /teamc/position_track_y/setpoint /teamc/position_track_y/state /teamc/position_track_x/control_effort /teamc/position_track_x/setpoint  /teamc/position_track_x/state"/>
-  <node name="vel_yaw_plot"
-        pkg="rqt_plot"
-        type="rqt_plot"
-        args="/teamc/position_track_yaw/setpoint /teamc/position_track_yaw/state /teamc/position_track_yaw/control_effort"/>
-  <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" />
+        args="/teamc/position_track_y/control_effort /teamc/position_track_y/setpoint /teamc/position_track_y/state /teamc/position_track_x/control_effort /teamc/position_track_x/setpoint  /teamc/position_track_x/state"/>-->
 
 </launch>

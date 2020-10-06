@@ -68,6 +68,10 @@ double setpoint_y = 0;
 double setpoint_z = 0;
 double setpoint_yaw = 0;
 
+double  target_x = 0;
+double  target_y = 0;
+bool    target_captured = false;
+
 double landing_height_threshold = 1;
 double landing_center_threshold = 0.5;
 
@@ -208,7 +212,7 @@ int main(int argc, char **argv)
 
   tag_36h11_0 = new Tag();
   // Set the translation between camera and landing center
-  tag_36h11_0->setToLandingCenterTranslation(Eigen::Vector3d(0.05, 0.05, 0.0));
+  tag_36h11_0->setToLandingCenterTranslation(Eigen::Vector3d(0.0, 0.0, 0.0));
 
   //camera to drone transformation
   Eigen::Matrix3d camera_to_drone_transformation;
@@ -259,17 +263,45 @@ int main(int argc, char **argv)
         double delta_x = landing_center_position(0)*cos(yaw) - landing_center_position(1)*sin(yaw);
         double delta_y = landing_center_position(0)*sin(yaw) + landing_center_position(1)*cos(yaw);
 
-        if(sqrt(pow(delta_x, 2) + pow(delta_y, 2)) > 0.15)
+        if (target_captured){
+          delta_x = target_x - local_x;
+          delta_y = target_y - local_y;
+        }
+        double curr_error = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+
+
+        if(curr_error > 0.15)
   			{
   				control_z_msg.data = local_z;
   			}
   			else{
   				control_z_msg.data = std::max(0.0, local_z-1.0);
   			}
-        double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
-        double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
-        setpoint_x = delta_x + local_x;
-        setpoint_y = delta_y + local_y;
+        //double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
+        //double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
+
+
+        if (curr_error < 0.02 && !target_captured) {
+            target_x = local_x;
+            target_y = local_y;
+            target_captured = true;
+            ROS_INFO_ONCE("Target is captured!");
+        }
+
+        if(target_captured){
+          setpoint_x = target_x;
+          setpoint_y = target_y;
+        }
+        else{
+          setpoint_x = delta_x + local_x;
+          setpoint_y = delta_y + local_y;
+        }
+
+        //setpoint_x = delta_x + local_x;
+        //setpoint_y = delta_y + local_y;
+
+        // setpoint_x = 0;
+        // setpoint_y = 0;
         setpoint_yaw = yaw_state + yaw_error;
         setpoint_yaw = 90;
 

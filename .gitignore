@@ -1,2 +1,7 @@
 devel_isolated/*
 build_isolated/*
+devel/*
+build/*
+src/dji_m100_controllers_gazebo/*
+src/dji_m100_description/*
+src/dji_m100_gazebo/*
