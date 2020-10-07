@@ -10,11 +10,6 @@
 #include <std_msgs/UInt8.h>
 #include <ros/console.h>
 
-#include "apriltag_ros/AprilTagDetection.h"
-#include "apriltag_ros/AprilTagDetectionArray.h"
-
-#include <tag.h>
-
 #include <cmath>
 #include <Eigen/Geometry>
 
@@ -29,8 +24,6 @@
 #include "tf/transform_broadcaster.h"
 #include "sensor_msgs/Imu.h"
 
-
-ros::Subscriber apriltags_36h11_sub;
 ros::Subscriber local_position_sub;
 ros::Subscriber landing_enable_sub;
 ros::Subscriber attitude_quaternion_sub;
@@ -40,7 +33,6 @@ ros::Subscriber global_position_sub;
 ros::Publisher setpoint_x_pub;
 ros::Publisher setpoint_y_pub;
 ros::Publisher setpoint_yaw_pub;
-ros::Publisher found_april_tag_pub;
 ros::Publisher yaw_state_pub;
 ros::Publisher x_state_pub;
 ros::Publisher y_state_pub;
@@ -77,11 +69,8 @@ double landing_center_threshold = 0.5;
 
 int flight_status;
 
-Tag *tag_36h11_0;
-
 double yaw_error;
 
-std::string tag_36h11_detection_topic;
 
 bool found_36h11 = false;
 bool landing_enabled = false;
@@ -90,7 +79,6 @@ std_msgs::Float64 setpoint_x_msg;
 std_msgs::Float64 setpoint_y_msg;
 std_msgs::Float64 control_z_msg;
 std_msgs::Float64 setpoint_yaw_msg;
-std_msgs::Bool found_tag_msg;
 
 std_msgs::Float64 x_state_msg;
 std_msgs::Float64 y_state_msg;
@@ -101,8 +89,8 @@ std_msgs::Float64 yaw_state_msg;
 tf::Quaternion tmp_;
 
 #ifndef TF_MATRIX3x3_H
-  typedef btScalar tfScalar;
-  namespace tf { typedef btMatrix3x3 Matrix3x3; }
+typedef btScalar tfScalar;
+namespace tf { typedef btMatrix3x3 Matrix3x3; }
 #endif
 
 tfScalar yaw, pitch, roll;
@@ -113,26 +101,6 @@ void imuMsgCallback(const sensor_msgs::Imu& imu_msg)
   tf::Matrix3x3(tmp_).getRPY(roll, pitch, yaw);
 }
 
-
-void apriltags36h11Callback(const apriltag_ros::AprilTagDetectionArray::ConstPtr& apriltag_pos_msg)
-{
-  if(std::begin(apriltag_pos_msg->detections) == std::end(apriltag_pos_msg->detections))
-  {
-    found_36h11 = false;
-    return;
-  }
-  else
-  {
-    for(auto it = std::begin(apriltag_pos_msg->detections); it != std::end(apriltag_pos_msg->detections); ++ it)
-    {
-      if((*it).id[0] == 0)
-      {
-        tag_36h11_0->updateTagState((*it).pose.pose.pose);
-        found_36h11 = true;
-      }
-    }
-  }
-}
 
 void localPositionCallback(const geometry_msgs::PointStamped::ConstPtr& local_position_msg)
 {
@@ -170,7 +138,6 @@ void flightStatusCallback(const std_msgs::UInt8& flight_status_msg)
 
 void print_parameters()
 {
-  ROS_INFO("Listening to 36h11 apriltag detection topic: %s", tag_36h11_detection_topic.c_str());
   ROS_INFO("landing_height_threshold: %f", landing_height_threshold);
   ROS_INFO("landing_center_threshold: %f", landing_center_threshold);
 }
@@ -180,11 +147,9 @@ void print_parameters()
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "track_apriltag_landing_node");
-  ROS_INFO("Starting apriltag track and landing publisher");
   ros::NodeHandle nh;
   ros::NodeHandle node_priv("~");
 
-  node_priv.param<std::string>("tag_36h11_detection_topic", tag_36h11_detection_topic, "/tag_detections");
   node_priv.param<double>("landing_height_threshold", landing_height_threshold, 1);
   node_priv.param<double>("landing_center_threshold", landing_center_threshold, 0.5);
 
@@ -193,34 +158,18 @@ int main(int argc, char **argv)
   setpoint_x_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_x/setpoint", 100);
   setpoint_y_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_y/setpoint", 100);
   setpoint_yaw_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_yaw/setpoint", 100);
-  found_april_tag_pub = nh.advertise<std_msgs::Bool>("/teamc/found_april_tag_pub", 10);
   yaw_state_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_yaw/state", 10);
   x_state_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_x/state", 100);
   y_state_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_y/state", 100);
   z_state_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_z/state", 100);
   z_control_pub = nh.advertise<std_msgs::Float64>("/teamc/position_track_z/control_effort", 100);
 
-  apriltags_36h11_sub = nh.subscribe(tag_36h11_detection_topic, 1, apriltags36h11Callback);
   local_position_sub = nh.subscribe("dji_sdk/local_position", 10, localPositionCallback);
   attitude_quaternion_sub = nh.subscribe("/dji_sdk/attitude", 1, attitudeQuaternionCallback );
   flight_status_sub = nh.subscribe("/dji_sdk/flight_status", 1, flightStatusCallback);
   global_position_sub = nh.subscribe("/dji_sdk/gps_position", 10, globalPositionCallback);
   landing_enable_sub = nh.subscribe("/dji_landing/landing_enable", 1, landingEnableCallback );
   ros::Subscriber imu_subscriber = nh.subscribe("dji_sdk/imu", 100, imuMsgCallback);
-
-
-
-  tag_36h11_0 = new Tag();
-  // Set the translation between camera and landing center
-  tag_36h11_0->setToLandingCenterTranslation(Eigen::Vector3d(0.0, 0.0, 0.0));
-
-  //camera to drone transformation
-  Eigen::Matrix3d camera_to_drone_transformation;
-  camera_to_drone_transformation << 0, -1, 0,
-  -1, 0, 0,
-  0, 0, -1;
-
-  Eigen::Vector3d landing_center_position;
 
   ros::Rate loop_rate(100);
 
@@ -241,95 +190,46 @@ int main(int argc, char **argv)
     }
 
     // Check if received command for landing
-    if(landing_enabled)
-    {
+    if(landing_enabled){
       ROS_INFO_ONCE("Landing is enabled.");
-      found_tag_msg.data = found_36h11;
-      found_april_tag_pub.publish(found_tag_msg);
-      // Found apriltag, start landing
-      if(found_36h11)
+      double curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
+
+      if(curr_error > 0.15)
       {
-        ROS_INFO_ONCE("Found Apriltag, start landing.");
-
-        // get the landing center position refer to the local frame
-        tag_36h11_0->calculateDroneFramePosition(camera_to_drone_transformation);
-        tag_36h11_0->calculateDroneFrameOrientation(camera_to_drone_transformation);
-        landing_center_position = tag_36h11_0->getLandingCenterPosition();
-
-        // get the landing center yaw error
-        yaw_error = (tag_36h11_0->getYawError())/ M_PI * 180 - 90;
-
-        double yaw_angle_radian = (yaw_state/180)* M_PI;
-        double delta_x = landing_center_position(0)*cos(yaw) - landing_center_position(1)*sin(yaw);
-        double delta_y = landing_center_position(0)*sin(yaw) + landing_center_position(1)*cos(yaw);
-
-        if (target_captured){
-          delta_x = target_x - local_x;
-          delta_y = target_y - local_y;
-        }
-        double curr_error = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
-
-
-        if(curr_error > 0.15)
-  			{
-  				control_z_msg.data = local_z;
-  			}
-  			else{
-  				control_z_msg.data = std::max(0.0, local_z-1.0);
-  			}
-        //double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
-        //double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
-
-
-        if (curr_error < 0.02 && !target_captured) {
-            target_x = local_x;
-            target_y = local_y;
-            target_captured = true;
-            ROS_INFO_ONCE("Target is captured!");
-        }
-
-        if(target_captured){
-          setpoint_x = target_x;
-          setpoint_y = target_y;
-        }
-        else{
-          setpoint_x = delta_x + local_x;
-          setpoint_y = delta_y + local_y;
-        }
-
-        //setpoint_x = delta_x + local_x;
-        //setpoint_y = delta_y + local_y;
-
-        // setpoint_x = 0;
-        // setpoint_y = 0;
-        setpoint_yaw = yaw_state + yaw_error;
-        setpoint_yaw = 90;
-
-        setpoint_yaw_msg.data = setpoint_yaw;
-        setpoint_x_msg.data = setpoint_x;
-        setpoint_y_msg.data = setpoint_y;
-
-        z_control_pub.publish(control_z_msg);
-
-        setpoint_x_pub.publish(setpoint_x_msg);
-        setpoint_y_pub.publish(setpoint_y_msg);
-        setpoint_yaw_pub.publish(setpoint_yaw_msg);
-
-        x_state_msg.data = local_x;
-        y_state_msg.data = local_y;
-        z_state_msg.data = local_z;
-        yaw_state_msg.data = yaw_state;
-
-        x_state_pub.publish(x_state_msg);
-        y_state_pub.publish(y_state_msg);
-        z_state_pub.publish(z_state_msg);
-        yaw_state_pub.publish(yaw_state_msg);
-
-				// ROS_INFO_STREAM("setpoint_x: " << setpoint_x_msg.data << " setpoint_y: " << setpoint_y_msg.data);
-        // ROS_INFO_STREAM("local_x: " << local_x << " local_y: " << local_y);
-        // ROS_INFO_STREAM("delta_x: " << delta_x << " delta_y: " << delta_y);
-        // ROS_INFO_STREAM("yaw_state: " << yaw_state_msg.data << " yaw_error: " << yaw_error);
+        control_z_msg.data = local_z;
       }
+      else{
+        control_z_msg.data = std::max(0.0, local_z-1.0);
+      }
+      //ROS_INFO_STREAM("curr_error: " << curr_error << " control_z_msg.data: " << control_z_msg.data);
+
+      setpoint_x = 0;
+      setpoint_y = 0;
+      setpoint_yaw = 90;
+
+      setpoint_yaw_msg.data = setpoint_yaw;
+      setpoint_x_msg.data = setpoint_x;
+      setpoint_y_msg.data = setpoint_y;
+
+      z_control_pub.publish(control_z_msg);
+      setpoint_x_pub.publish(setpoint_x_msg);
+      setpoint_y_pub.publish(setpoint_y_msg);
+      setpoint_yaw_pub.publish(setpoint_yaw_msg);
+
+      x_state_msg.data = local_x;
+      y_state_msg.data = local_y;
+      z_state_msg.data = local_z;
+      yaw_state_msg.data = yaw_state;
+
+      x_state_pub.publish(x_state_msg);
+      y_state_pub.publish(y_state_msg);
+      z_state_pub.publish(z_state_msg);
+      yaw_state_pub.publish(yaw_state_msg);
+
+      // ROS_INFO_STREAM("setpoint_x: " << setpoint_x_msg.data << " setpoint_y: " << setpoint_y_msg.data);
+      // ROS_INFO_STREAM("local_x: " << local_x << " local_y: " << local_y);
+      // ROS_INFO_STREAM("delta_x: " << delta_x << " delta_y: " << delta_y);
+      // ROS_INFO_STREAM("yaw_state: " << yaw_state_msg.data << " yaw_error: " << yaw_error)
 
       loop_rate.sleep();
     }

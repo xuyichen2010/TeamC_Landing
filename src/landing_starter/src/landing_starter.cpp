@@ -62,8 +62,8 @@ int main(int argc, char** argv) {
 	{
 		ros::spinOnce();
     sensor_msgs::Joy controlPosYaw;
-    controlPosYaw.axes.push_back(0.0);
-    controlPosYaw.axes.push_back(0.0);
+    controlPosYaw.axes.push_back(0.1);
+    controlPosYaw.axes.push_back(0.1);
     controlPosYaw.axes.push_back(3.6);
     controlPosYaw.axes.push_back(1.6);
     ctrlPosYawPub.publish(controlPosYaw);
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
 void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
   local_position = *msg;
-  if (local_position.point.z >= 3.5){
+  if (local_position.point.z >= 3.5 && local_position.point.x >= 0.1 && local_position.point.z >= 0.1){
         destination_reached = true;
       }
 }
