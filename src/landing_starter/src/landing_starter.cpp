@@ -62,8 +62,8 @@ int main(int argc, char** argv) {
 	{
 		ros::spinOnce();
     sensor_msgs::Joy controlVelYaw;
-    controlVelYaw.axes.push_back(0.1);
-    controlVelYaw.axes.push_back(0.1);
+    controlVelYaw.axes.push_back(0.05);
+    controlVelYaw.axes.push_back(0.05);
     controlVelYaw.axes.push_back(0.2);
     controlVelYaw.axes.push_back(0);
     ctrlVelYawPub.publish(controlVelYaw);
