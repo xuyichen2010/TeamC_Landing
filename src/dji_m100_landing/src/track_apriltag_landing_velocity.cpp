@@ -196,10 +196,12 @@ int main(int argc, char **argv)
 
       if(curr_error > 0.15)
       {
-        control_z_msg.data = local_z;
+        //control_z_msg.data = local_z;
+        control_z_msg.data = 0;
       }
       else{
-        control_z_msg.data = std::max(0.0, local_z-1.0);
+        //control_z_msg.data = std::max(0.0, local_z-1.0);
+        control_z_msg.data = -0.1;
       }
       //ROS_INFO_STREAM("curr_error: " << curr_error << " control_z_msg.data: " << control_z_msg.data);
 
@@ -228,6 +230,7 @@ int main(int argc, char **argv)
 
       // ROS_INFO_STREAM("setpoint_x: " << setpoint_x_msg.data << " setpoint_y: " << setpoint_y_msg.data);
       // ROS_INFO_STREAM("local_x: " << local_x << " local_y: " << local_y);
+      ROS_INFO_STREAM("local_z: " << local_z);
       // ROS_INFO_STREAM("delta_x: " << delta_x << " delta_y: " << delta_y);
       // ROS_INFO_STREAM("yaw_state: " << yaw_state_msg.data << " yaw_error: " << yaw_error)
 

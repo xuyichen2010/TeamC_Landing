@@ -60,7 +60,7 @@ bool continue_landing = false;
 double local_z;
 double local_x;
 double local_y;
-double landing_height_threshold = 1;
+double landing_height_threshold = 1.3;
 
 std::string topic_from_controller;
 
@@ -156,16 +156,25 @@ int main(int argc, char **argv)
       {
        // Set the Joy message and publish to flight_control_setpoint_ENUposition_yaw topic
         ROS_DEBUG_ONCE("Velocity controller: Landing condition met, going down");
-        sensor_msgs::Joy controlRPzY;
-        //ROS_INFO_STREAM("control_effort_z: " << control_effort_z);
-        controlRPzY.axes.push_back(velocity_control_effort_x);
-        controlRPzY.axes.push_back(velocity_control_effort_y);
-        controlRPzY.axes.push_back(control_effort_z);
-        controlRPzY.axes.push_back(velocity_control_effort_yaw);
-        ctrlRPYPub.publish(controlRPzY);
+        // sensor_msgs::Joy controlRPzY;
+        // //ROS_INFO_STREAM("control_effort_z: " << control_effort_z);
+        // controlRPzY.axes.push_back(velocity_control_effort_x);
+        // controlRPzY.axes.push_back(velocity_control_effort_y);
+        // controlRPzY.axes.push_back(control_effort_z);
+        // controlRPzY.axes.push_back(velocity_control_effort_yaw);
+        // ctrlRPYPub.publish(controlRPzY);
 
-        //ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
-        //ROS_INFO_STREAM("effort_z: " << descending_speed << " effort_yaw: " << velocity_control_effort_yaw);
+        sensor_msgs::Joy controlVel;
+        //ROS_INFO_STREAM("control_effort_z: " << control_effort_z);
+        controlVel.axes.push_back(velocity_control_effort_x);
+        controlVel.axes.push_back(velocity_control_effort_y);
+        controlVel.axes.push_back(control_effort_z);
+        controlVel.axes.push_back(0);
+
+        ctrlVelYawPub.publish(controlVel);
+
+        ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
+        ROS_INFO_STREAM("effort_z: " << control_effort_z << " effort_yaw: " << velocity_control_effort_yaw);
 
         during_landing = true;
         continue_landing = true;

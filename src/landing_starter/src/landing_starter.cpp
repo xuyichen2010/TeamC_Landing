@@ -14,7 +14,7 @@ ros::ServiceClient sdk_ctrl_authority_service;
 ros::ServiceClient drone_task_service;
 ros::ServiceClient query_version_service;
 
-ros::Publisher ctrlPosYawPub;
+ros::Publisher ctrlVelYawPub;
 
 // global variables for subscribed topics
 uint8_t flight_status = 255;
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
   sdk_ctrl_authority_service = nh.serviceClient<dji_sdk::SDKControlAuthority> ("dji_sdk/sdk_control_authority");
 
   //Publishers
-  ctrlPosYawPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_ENUposition_yaw", 10);
+  ctrlVelYawPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_ENUvelocity_yawrate", 100);
 
   bool obtain_control_result = obtain_control();
   bool takeoff_result;
@@ -61,12 +61,12 @@ int main(int argc, char** argv) {
   while(nh.ok() && !landing_enabled && !destination_reached)
 	{
 		ros::spinOnce();
-    sensor_msgs::Joy controlPosYaw;
-    controlPosYaw.axes.push_back(0.1);
-    controlPosYaw.axes.push_back(0.1);
-    controlPosYaw.axes.push_back(3.6);
-    controlPosYaw.axes.push_back(1.6);
-    ctrlPosYawPub.publish(controlPosYaw);
+    sensor_msgs::Joy controlVelYaw;
+    controlVelYaw.axes.push_back(0.1);
+    controlVelYaw.axes.push_back(0.1);
+    controlVelYaw.axes.push_back(0.2);
+    controlVelYaw.axes.push_back(0);
+    ctrlVelYawPub.publish(controlVelYaw);
     r.sleep();
   }
 
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
 void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
   local_position = *msg;
-  if (local_position.point.z >= 3.5 && local_position.point.x >= 0.1 && local_position.point.z >= 0.1){
+  if (local_position.point.z >= 3.5 && local_position.point.x >= 1.5 && local_position.point.z >= 1.5){
         destination_reached = true;
       }
 }
