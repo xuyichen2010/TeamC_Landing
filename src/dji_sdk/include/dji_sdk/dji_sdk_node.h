@@ -30,6 +30,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <nmea_msgs/Sentence.h>
+#include <nav_msgs/Odometry.h>
 
 //! msgs
 #include <dji_sdk/Gimbal.h>
@@ -364,6 +365,7 @@ private:
   ros::Publisher gps_position_publisher;
   ros::Publisher vo_position_publisher;
   ros::Publisher height_publisher;
+  ros::Publisher odometry_publisher;
   ros::Publisher velocity_publisher;
   ros::Publisher from_mobile_data_publisher;
   ros::Publisher from_payload_data_publisher;

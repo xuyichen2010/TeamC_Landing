@@ -5,6 +5,22 @@
 
     <node pkg="dji_m100_landing" type="position_track_velocity_controller" name="position_track_velocity_controller_node" output="screen">
       </node>
+
+   <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    <param name="output_frame" value="odom"/>
+    <param name="freq" value="30.0"/>
+    <param name="sensor_timeout" value="1.0"/>
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="true"/>
+    <param name="debug" value="false"/>
+    <param name="self_diagnose" value="false"/>
+
+    <remap from="odom" to="dji_sdk/odometry" />
+    <remap from="imu" to="dji_sdk/imu" />
+    <remap from="vo" to="dji_sdk/imu" />
+  </node>
+
  <!--
   <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
     <param name="video_device" value="/dev/video1" />
