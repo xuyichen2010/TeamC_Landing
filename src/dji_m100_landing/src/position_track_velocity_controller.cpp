@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 
 	ctrlVelYawPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_ENUvelocity_yawrate", 100);
 	ctrlRPYPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_rollpitch_yawrate_zposition", 100);
-	ros::Rate loop_rate(100);
+	ros::Rate loop_rate(30);
 
 	while(ros::ok())
 	{
@@ -167,15 +167,16 @@ int main(int argc, char **argv)
 
 				// Set the Joy message and publish to flight_control_setpoint_ENUposition_yaw topic
 				ROS_DEBUG_ONCE("Velocity controller: Landing condition met, going down");
-				sensor_msgs::Joy controlRPzY;
-				//ROS_INFO_STREAM("control_effort_z: " << control_effort_z);
-				controlRPzY.axes.push_back(velocity_control_effort_x);
-				controlRPzY.axes.push_back(velocity_control_effort_y);
-				controlRPzY.axes.push_back(control_effort_z);
-				controlRPzY.axes.push_back(velocity_control_effort_yaw);
-				ctrlRPYPub.publish(controlRPzY);
+        sensor_msgs::Joy controlVel;
+        //ROS_INFO_STREAM("control_effort_z: " << control_effort_z);
+        controlVel.axes.push_back(velocity_control_effort_x);
+        controlVel.axes.push_back(velocity_control_effort_y);
+        controlVel.axes.push_back(control_effort_z);
+        controlVel.axes.push_back(0);
 
-				//ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
+        ctrlVelYawPub.publish(controlVel);
+
+				ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
 				//ROS_INFO_STREAM("effort_z: " << descending_speed << " effort_yaw: " << velocity_control_effort_yaw);
 
 				during_landing = true;

@@ -263,42 +263,21 @@ int main(int argc, char **argv)
         double delta_x = landing_center_position(0)*cos(yaw) - landing_center_position(1)*sin(yaw);
         double delta_y = landing_center_position(0)*sin(yaw) + landing_center_position(1)*cos(yaw);
 
-        if (target_captured){
-          delta_x = target_x - local_x;
-          delta_y = target_y - local_y;
-        }
         double curr_error = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
 
 
         if(curr_error > 0.15)
   			{
-  				control_z_msg.data = local_z;
+  				control_z_msg.data = 0;
   			}
   			else{
-  				control_z_msg.data = std::max(0.0, local_z-1.0);
+  				control_z_msg.data = -0.1;
   			}
         //double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
         //double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
 
-
-        if (curr_error < 0.02 && !target_captured) {
-            target_x = local_x;
-            target_y = local_y;
-            target_captured = true;
-            ROS_INFO_ONCE("Target is captured!");
-        }
-
-        if(target_captured){
-          setpoint_x = target_x;
-          setpoint_y = target_y;
-        }
-        else{
-          setpoint_x = delta_x + local_x;
-          setpoint_y = delta_y + local_y;
-        }
-
-        //setpoint_x = delta_x + local_x;
-        //setpoint_y = delta_y + local_y;
+        setpoint_x = delta_x + local_x;
+        setpoint_y = delta_y + local_y;
 
         // setpoint_x = 0;
         // setpoint_y = 0;

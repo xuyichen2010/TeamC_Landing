@@ -4,10 +4,26 @@
     </node>
 
     <node pkg="dji_m100_landing" type="position_track_velocity_controller" name="position_track_velocity_controller_node" output="screen">
-      </node>
+    </node>
 
+    <node pkg="kalman_filter_ros" type="single_kalman" name="kalman_x" output="screen">
+		<param name="input_topic" value="/teamc/position_track_x/setpoint" />
+		<param name="output_topic" value="/teamc/position_track_x/setpoint_filtered" />
+		<param name="Q" value="0.00008" />
+		<param name="R" value="10" />
+		<param name="x0" value="0" />
+    </node>
+    
+    <node pkg="kalman_filter_ros" type="single_kalman" name="kalman_y" output="screen">
+		<param name="input_topic" value="/teamc/position_track_y/setpoint" />
+		<param name="output_topic" value="/teamc/position_track_y/setpoint_filtered" />
+		<param name="Q" value="0.00008" />
+		<param name="R" value="10" />
+		<param name="x0" value="0" />
+    </node>
+  <!--
   <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
-    <param name="video_device" value="/dev/video1" />
+    <param name="video_device" value="/dev/video0" />
     <param name="image_width" value="640" />
     <param name="image_height" value="480" />
     <param name="pixel_format" value="yuyv" />
@@ -15,7 +31,7 @@
     <param name="io_method" value="mmap"/>
   </node>
      
-    <!--
+    
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
  		<arg name="image_rect_topic" default="/usb_cam/image_rect" />
 		<arg name="camera_info_topic" default="/usb_cam/camera_info" />
@@ -36,35 +52,33 @@
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_x_controller" pkg="pid" type="controller">
       <param name="node_name" value="apriltag_tracking_x_controller" />
-      <param name="Kp" value="12" />
-      <param name="Ki" value="0" />
-      <param name="Kd" value="40" />
+      <param name="Kp" value="0.9" />
+      <param name="Ki" value="0.01" />
+      <param name="Kd" value="0.1" />
       <param name="converge_threshold" value="0.05" />
-      <param name="upper_limit" value="0.03" />
-      <param name="lower_limit" value="-0.03" />
-      <param name="windup_limit" value="20" />
-      <param name="cutoff_frequency" value="20" />
+      <param name="upper_limit" value="30" />
+      <param name="lower_limit" value="-30" />
+      <param name="windup_limit" value="100" />
       <param name="diagnostic_period" value="0.25" />
       <param name="max_loop_frequency" value="105.0" />
       <param name="min_loop_frequency" value="95.0" />
-      <remap from="setpoint" to="/teamc/position_track_x/setpoint" />
+      <remap from="setpoint" to="/teamc/position_track_x/setpoint_filtered" />
       <param name="topic_from_plant" value="/teamc/position_track_x/state" />
       <param name="topic_from_controller" value="/teamc/position_track_x/control_effort" />
      </node>
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_y_controller" pkg="pid" type="controller"  >
       <param name="node_name" value="apriltag_tracking_y_controller" />
-      <param name="Kp" value="12" />
-      <param name="Ki" value="0" />
-      <param name="Kd" value="40" />
+      <param name="Kp" value="0.9" />
+      <param name="Ki" value="0.01" />
+      <param name="Kd" value="0.1" />
       <param name="converge_threshold" value="0.05" />
-      <param name="upper_limit" value="0.03" />
-      <param name="lower_limit" value="-0.03" />
-      <param name="windup_limit" value="10" />
-      <param name="cutoff_frequency" value="20" />
+      <param name="upper_limit" value="30" />
+      <param name="lower_limit" value="-30" />
+      <param name="windup_limit" value="100" />
       <param name="max_loop_frequency" value="105.0" />
       <param name="min_loop_frequency" value="95.0" />
-      <remap from="setpoint" to="/teamc/position_track_y/setpoint" />
+      <remap from="setpoint" to="/teamc/position_track_y/setpoint_filtered" />
       <param name="topic_from_plant" value="/teamc/position_track_y/state" />
       <param name="topic_from_controller" value="/teamc/position_track_y/control_effort" />
     </node>
