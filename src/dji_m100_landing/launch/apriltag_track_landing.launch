@@ -54,7 +54,7 @@
     <node ns="dji_m100_landing" name="position_track_pid_velocity_x_controller" pkg="pid" type="controller">
       <param name="node_name" value="apriltag_tracking_x_controller" />
       <param name="Kp" value="0.9" />
-      <param name="Ki" value="0.015 " />
+      <param name="Ki" value="0.03 " />
       <param name="Kd" value="0.1" />
       <param name="converge_threshold" value="0.05" />
       <param name="upper_limit" value="30" />
@@ -71,10 +71,10 @@
     <node ns="dji_m100_landing" name="position_track_pid_velocity_y_controller" pkg="pid" type="controller"  >
       <param name="node_name" value="apriltag_tracking_y_controller" />
       <param name="Kp" value="0.9" />
-      <param name="Ki" value="0.015" />
+      <param name="Ki" value="0.03" />
       <param name="Kd" value="0.1" />
       <param name="converge_threshold" value="0.05" />
-      <param name="upper_limit" value="3" />
+      <param name="upper_limit" value="30" />
       <param name="lower_limit" value="-30" />
       <param name="windup_limit" value="100" />
       <param name="max_loop_frequency" value="105.0" />

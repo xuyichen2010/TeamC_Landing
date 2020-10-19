@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     sensor_msgs::Joy controlVelYaw;
     controlVelYaw.axes.push_back(0.05);
     controlVelYaw.axes.push_back(0.05);
-    controlVelYaw.axes.push_back(0.2);
+    controlVelYaw.axes.push_back(0.4);
     controlVelYaw.axes.push_back(0);
     ctrlVelYawPub.publish(controlVelYaw);
     r.sleep();
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
 void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
   local_position = *msg;
-  if (local_position.point.z >= 3.5 && local_position.point.x >= 1.5 && local_position.point.z >= 1.5){
+  if (local_position.point.z >= 3.5 && local_position.point.x != 0.5 && local_position.point.y != 0.5){
         destination_reached = true;
       }
 }

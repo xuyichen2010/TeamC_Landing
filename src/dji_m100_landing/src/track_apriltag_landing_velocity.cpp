@@ -194,16 +194,16 @@ int main(int argc, char **argv)
       ROS_INFO_ONCE("Landing is enabled.");
       double curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
 
-      if(curr_error > 0.15)
+      if(curr_error > 0.03)
       {
         //control_z_msg.data = local_z;
         control_z_msg.data = 0;
       }
       else{
         //control_z_msg.data = std::max(0.0, local_z-1.0);
-        control_z_msg.data = -0.1;
+        control_z_msg.data = -0.3;
       }
-      //ROS_INFO_STREAM("curr_error: " << curr_error << " control_z_msg.data: " << control_z_msg.data);
+      ROS_INFO_STREAM("curr_error: " << curr_error << " control_z_msg.data: " << control_z_msg.data);
 
       setpoint_x = 0;
       setpoint_y = 0;

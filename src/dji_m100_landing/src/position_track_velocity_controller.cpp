@@ -41,6 +41,7 @@ ros::Subscriber flight_status_sub;
 
 ros::Publisher ctrlVelYawPub;
 ros::Publisher ctrlRPYPub;
+ros::Publisher ctrlBrakePub;
 
 // ros::ServiceClient velocity_control_service;
 ros::ServiceClient drone_task_service;
@@ -136,7 +137,9 @@ int main(int argc, char **argv)
 
   ctrlVelYawPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_ENUvelocity_yawrate", 100);
   ctrlRPYPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_rollpitch_yawrate_zposition", 100);
-  ros::Rate loop_rate(100);
+  ctrlBrakePub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_generic", 10);
+
+  ros::Rate loop_rate(30);
 
   while(ros::ok())
   {
@@ -172,6 +175,21 @@ int main(int argc, char **argv)
         controlVel.axes.push_back(0);
 
         ctrlVelYawPub.publish(controlVel);
+	
+
+	//sensor_msgs::Joy controlVelYawRate;
+	//uint8_t flag = (DJISDK::VERTICAL_VELOCITY   |
+		        //DJISDK::HORIZONTAL_VELOCITY |
+		        //DJISDK::YAW_RATE            |
+		        //DJISDK::HORIZONTAL_GROUND   |
+		        //DJISDK::STABLE_ENABLE);
+	//controlVelYawRate.axes.push_back(velocity_control_effort_x);
+	//controlVelYawRate.axes.push_back(velocity_control_effort_y);
+	//controlVelYawRate.axes.push_back(control_effort_z);
+	//controlVelYawRate.axes.push_back(0);
+	//controlVelYawRate.axes.push_back(flag);
+
+	//ctrlBrakePub.publish(controlVelYawRate);
 
         ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
         ROS_INFO_STREAM("effort_z: " << control_effort_z << " effort_yaw: " << velocity_control_effort_yaw);
