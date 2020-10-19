@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     controlVelYaw.axes.push_back(0.05);
     controlVelYaw.axes.push_back(0.05);
     controlVelYaw.axes.push_back(0.4);
-    controlVelYaw.axes.push_back(0);
+    controlVelYaw.axes.push_back(0.05);
     ctrlVelYawPub.publish(controlVelYaw);
     r.sleep();
   }

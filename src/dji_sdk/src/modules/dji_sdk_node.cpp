@@ -88,8 +88,9 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private)
   bool enable_advanced_sensing = false;
 
 #ifdef ADVANCED_SENSING
-  enable_advanced_sensing = true;
-  ROS_INFO("Advanced Sensing is Enabled on M210.");
+  //enable_advanced_sensing = true;
+  //ROS_INFO("Advanced Sensing is Enabled on M210.");
+  enable_advanced_sensing = false;
 #endif
 
   //! @note currently does not work without thread support

@@ -5,3 +5,5 @@ build/*
 src/dji_m100_controllers_gazebo/*
 src/dji_m100_description/*
 src/dji_m100_gazebo/*
+logs/*
+.catkin_tools/*
