@@ -13,7 +13,7 @@
 		<param name="R" value="10" />
 		<param name="x0" value="0" />
     </node>
-    
+
     <node pkg="kalman_filter_ros" type="single_kalman" name="kalman_y" output="screen">
 		<param name="input_topic" value="/teamc/position_track_y/setpoint" />
 		<param name="output_topic" value="/teamc/position_track_y/setpoint_filtered" />
@@ -30,8 +30,8 @@
     <param name="camera_frame_id" value="usb_cam" />
     <param name="io_method" value="mmap"/>
   </node>
-     
-    
+
+
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
  		<arg name="image_rect_topic" default="/usb_cam/image_rect" />
 		<arg name="camera_info_topic" default="/usb_cam/camera_info" />
@@ -45,16 +45,21 @@
 		<arg name="camera_frame" default="guidance_down" />
     </include>
 
-    <node pkg="tf" type="static_transform_publisher" name="usb_to_base" args="0 0 -0.1 -0.7071068 0.7071068 0 0 /usb_cam /base_link 100"/> 
-   
-    <node pkg="landing_starter" type="landing_starter" name="landing_starter" output="screen"/>
+    <!--<node pkg="tf" type="static_transform_publisher" name="usb_to_base" args="0 0 -0.1 -0.7071068 0.7071068 0 0 /usb_cam /base_link 100"/>
+    -->
+    <node pkg="landing_starter" type="landing_starter" name="landing_starter" output="screen">
+      <param name="vx" value="0" />
+  		<param name="vy" value="0" />
+  		<param name="vz" value="0.4" />
+  		<param name="vyaw" value="0" />
+    </node>
 
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_x_controller" pkg="pid" type="controller">
       <param name="node_name" value="apriltag_tracking_x_controller" />
-      <param name="Kp" value="0.9" />
-      <param name="Ki" value="0.01" />
-      <param name="Kd" value="0.1" />
+      <param name="Kp" value="0.2" />
+      <param name="Ki" value="0.03" />
+      <param name="Kd" value="0.35" />
       <param name="converge_threshold" value="0.05" />
       <param name="upper_limit" value="30" />
       <param name="lower_limit" value="-30" />
@@ -69,9 +74,9 @@
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_y_controller" pkg="pid" type="controller"  >
       <param name="node_name" value="apriltag_tracking_y_controller" />
-      <param name="Kp" value="0.9" />
-      <param name="Ki" value="0.01" />
-      <param name="Kd" value="0.1" />
+      <param name="Kp" value="0.2" />
+      <param name="Ki" value="0.03" />
+      <param name="Kd" value="0.35" />
       <param name="converge_threshold" value="0.05" />
       <param name="upper_limit" value="30" />
       <param name="lower_limit" value="-30" />
@@ -85,7 +90,7 @@
 
 
 
-
+    <!--
     <node ns="dji_m100_landing" name="position_track_pid_yaw_controller" pkg="pid" type="controller" >
       <param name="node_name" value="apriltag_tracking_yaw_controller" />
       <param name="Kp" value="0.9" />
@@ -103,4 +108,5 @@
       <param name="topic_from_plant" value="/teamc/position_track_yaw/state" />
       <param name="topic_from_controller" value="/teamc/position_track_yaw/control_effort" />
      </node>
+     -->
  </launch>

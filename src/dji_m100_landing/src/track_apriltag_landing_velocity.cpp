@@ -247,6 +247,8 @@ int main(int argc, char **argv)
       found_tag_msg.data = found_36h11;
       found_april_tag_pub.publish(found_tag_msg);
       // Found apriltag, start landing
+      control_z_msg.data = 0;
+      double curr_error;
       if(found_36h11)
       {
         ROS_INFO_ONCE("Found Apriltag, start landing.");
@@ -263,25 +265,24 @@ int main(int argc, char **argv)
         double delta_x = landing_center_position(0)*cos(yaw) - landing_center_position(1)*sin(yaw);
         double delta_y = landing_center_position(0)*sin(yaw) + landing_center_position(1)*cos(yaw);
 
-        double curr_error = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+        curr_error = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
 
-
-        if(curr_error > 0.15)
-  			{
-  				control_z_msg.data = 0;
-  			}
-  			else{
-  				control_z_msg.data = -0.1;
-  			}
         //double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
         //double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
 
         setpoint_x = delta_x + local_x;
         setpoint_y = delta_y + local_y;
+        }
 
-        // setpoint_x = 0;
-        // setpoint_y = 0;
-        setpoint_yaw = yaw_state + yaw_error;
+        else{
+          setpoint_x = 0;
+          setpoint_y = 0;
+          curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
+        }
+        if(curr_error < 0.15){
+          control_z_msg.data = -0.1;
+        }
+        //setpoint_yaw = yaw_state + yaw_error;
         setpoint_yaw = 90;
 
         setpoint_yaw_msg.data = setpoint_yaw;
@@ -308,7 +309,6 @@ int main(int argc, char **argv)
         // ROS_INFO_STREAM("local_x: " << local_x << " local_y: " << local_y);
         // ROS_INFO_STREAM("delta_x: " << delta_x << " delta_y: " << delta_y);
         // ROS_INFO_STREAM("yaw_state: " << yaw_state_msg.data << " yaw_error: " << yaw_error);
-      }
 
       loop_rate.sleep();
     }

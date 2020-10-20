@@ -24,10 +24,21 @@ bool landing_enabled = false;
 bool destination_reached = false;
 geometry_msgs::PointStamped local_position;
 
+double vx = 0;
+double vy = 0;
+double vz = 0.4;
+double vyaw = 0;
+
 int main(int argc, char** argv) {
   ros::init(argc, argv, "landing_starter_node");
   ros::NodeHandle nh;
+  ros::NodeHandle node_priv("~");
   // Subscribe to messages from dji_sdk_node
+
+  node_priv.param<double>("vx", vx, 0);
+  node_priv.param<double>("vy", vy, 0);
+  node_priv.param<double>("vz", vz, 0.4);
+  node_priv.param<double>("vyaw", vyaw, 0);
 
   ros::Subscriber flightStatusSub = nh.subscribe("dji_sdk/flight_status", 10, &flight_status_callback);
   ros::Subscriber gpsSub          = nh.subscribe("dji_sdk/gps_position", 10, &gps_position_callback);
@@ -62,10 +73,10 @@ int main(int argc, char** argv) {
 	{
 		ros::spinOnce();
     sensor_msgs::Joy controlVelYaw;
-    controlVelYaw.axes.push_back(0.05);
-    controlVelYaw.axes.push_back(0.05);
-    controlVelYaw.axes.push_back(0.4);
-    controlVelYaw.axes.push_back(0);
+    controlVelYaw.axes.push_back(vx);
+    controlVelYaw.axes.push_back(vy);
+    controlVelYaw.axes.push_back(vz);
+    controlVelYaw.axes.push_back(vyaw);
     ctrlVelYawPub.publish(controlVelYaw);
     r.sleep();
   }
@@ -75,7 +86,7 @@ int main(int argc, char** argv) {
 
 void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
   local_position = *msg;
-  if (local_position.point.z >= 3.5){
+  if (local_position.point.z >= 2.5){
         destination_reached = true;
       }
 }

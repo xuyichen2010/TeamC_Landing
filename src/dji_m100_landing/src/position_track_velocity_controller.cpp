@@ -88,11 +88,11 @@ void ControlEffortZCallback(std_msgs::Float64 control_effort_z_msg)
 {
 	control_effort_z = control_effort_z_msg.data;
 }
-
+/*
 void velocityControlEffortYawCallback(std_msgs::Float64 velocity_control_effort_yaw_msg)
 {
 	velocity_control_effort_yaw = velocity_control_effort_yaw_msg.data;
-}
+}*/
 
 void foundapriltagCallback(const std_msgs::Bool& found_tag_msg){
 	found_tag = found_tag_msg.data;
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	velocity_control_x_sub = nh.subscribe("/teamc/position_track_x/control_effort", 100, velocityControlEffortXCallback);
 	velocity_control_y_sub = nh.subscribe("/teamc/position_track_y/control_effort", 100, velocityControlEffortYCallback);
 	control_z_sub = nh.subscribe("/teamc/position_track_z/control_effort", 100, ControlEffortZCallback);
-	velocity_control_yaw_sub = nh.subscribe("/teamc/position_track_yaw/control_effort", 100, velocityControlEffortYawCallback);
+	//velocity_control_yaw_sub = nh.subscribe("/teamc/position_track_yaw/control_effort", 100, velocityControlEffortYawCallback);
   local_position_sub = nh.subscribe("dji_sdk/local_position", 100, localPositionCallback);
 	landing_enable_sub = nh.subscribe("/dji_landing/landing_enable", 1, landingEnableCallback );
 	found_tag_sub = nh.subscribe("/teamc/found_april_tag_pub", 1, foundapriltagCallback );
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 		{
 			ROS_INFO_ONCE("Landing is enabled.");
 			// Found apriltag, start landing
-		  if(found_tag)
+		  if(local_z > landing_height_threshold)
 			 {
 
 				ROS_INFO_ONCE("Found Apriltag, start landing.");
@@ -184,28 +184,15 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				if (during_landing)
+				if (land())
 				{
-					ROS_INFO_ONCE("Lost apriltag during landing!");
-					ROS_INFO_STREAM(local_z);
-					// If height is very low, start dji landing
-					if (local_z <= landing_height_threshold)
+					ROS_INFO_ONCE("Continue landing.");
+					if(flight_status == DJISDK::M100FlightStatus::M100_STATUS_ON_GROUND)
 					{
-						if (land())
-						{
-							ROS_INFO_ONCE("Continue landing.");
-							if(flight_status == DJISDK::M100FlightStatus::M100_STATUS_ON_GROUND)
-							{
-								ROS_INFO_ONCE("Successful landing!");
-								during_landing = false;
-								continue_landing = false;
-							}
-						}
+						ROS_INFO_ONCE("Successful landing!");
+						during_landing = false;
+						continue_landing = false;
 					}
-				}
-				else
-				{
-					ROS_ERROR_ONCE("No apriltag found, landing suspend!");
 				}
 			}
 
