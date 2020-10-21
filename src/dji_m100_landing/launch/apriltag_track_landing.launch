@@ -21,7 +21,7 @@
 		<param name="R" value="10" />
 		<param name="x0" value="0" />
     </node>
-  <!--
+  
   <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
     <param name="video_device" value="/dev/video0" />
     <param name="image_width" value="640" />
@@ -37,15 +37,15 @@
 		<arg name="camera_info_topic" default="/usb_cam/camera_info" />
 		<arg name="camera_frame" default="usb_cam" />
     </include>
-    -->
-
+    
+  <!--
    <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
  		<arg name="image_rect_topic" default="/guidance_down/left/image_rect" />
 		<arg name="camera_info_topic" default="/guidance_down/left/camera_info" />
 		<arg name="camera_frame" default="guidance_down" />
     </include>
 
-    <!--<node pkg="tf" type="static_transform_publisher" name="usb_to_base" args="0 0 -0.1 -0.7071068 0.7071068 0 0 /usb_cam /base_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="usb_to_base" args="0 0 -0.1 -0.7071068 0.7071068 0 0 /usb_cam /base_link 100"/>
     -->
     <node pkg="landing_starter" type="landing_starter" name="landing_starter" output="screen">
       <param name="vx" value="0.0" />
@@ -57,9 +57,9 @@
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_x_controller" pkg="pid" type="controller">
       <param name="node_name" value="apriltag_tracking_x_controller" />
-      <param name="Kp" value="0.2" />
+      <param name="Kp" value="0.5" />
       <param name="Ki" value="0.0" />
-      <param name="Kd" value="0.35" />
+      <param name="Kd" value="0.1" />
       <param name="converge_threshold" value="0.05" />
       <param name="upper_limit" value="30" />
       <param name="lower_limit" value="-30" />
@@ -74,9 +74,9 @@
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_y_controller" pkg="pid" type="controller"  >
       <param name="node_name" value="apriltag_tracking_y_controller" />
-      <param name="Kp" value="0.2" />
+      <param name="Kp" value="0.5" />
       <param name="Ki" value="0.0" />
-      <param name="Kd" value="0.35" />
+      <param name="Kd" value="0.1" />
       <param name="converge_threshold" value="0.05" />
       <param name="upper_limit" value="30" />
       <param name="lower_limit" value="-30" />

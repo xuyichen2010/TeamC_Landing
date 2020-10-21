@@ -2,7 +2,7 @@
   <node name="vel_x_plot"
         pkg="rqt_plot"
         type="rqt_plot"
-        args="/teamc/position_track_x/setpoint_filtered  /teamc/position_track_x/state"/>
+        args="/teamc/position_track_x/control_effort /teamc/position_track_x/setpoint_filtered  /teamc/position_track_x/state"/>
   <node name="vel_y_plot"
         pkg="rqt_plot"
         type="rqt_plot"
