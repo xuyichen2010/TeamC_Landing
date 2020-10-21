@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 
         ctrlVelYawPub.publish(controlVel);
 
-				ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
+				//ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
 				//ROS_INFO_STREAM("effort_z: " << descending_speed << " effort_yaw: " << velocity_control_effort_yaw);
 
 				during_landing = true;

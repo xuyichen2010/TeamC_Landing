@@ -97,6 +97,8 @@ std_msgs::Float64 y_state_msg;
 std_msgs::Float64 z_state_msg;
 std_msgs::Float64 yaw_state_msg;
 
+geometry_msgs::Vector3Stamped current_velocity;
+
 
 tf::Quaternion tmp_;
 
@@ -106,6 +108,10 @@ tf::Quaternion tmp_;
 #endif
 
 tfScalar yaw, pitch, roll;
+
+void velocity_callback(const geometry_msgs::Vector3Stamped::ConstPtr& msg){
+  current_velocity = *msg;
+}
 
 void imuMsgCallback(const sensor_msgs::Imu& imu_msg)
 {
@@ -207,6 +213,8 @@ int main(int argc, char **argv)
   global_position_sub = nh.subscribe("/dji_sdk/gps_position", 10, globalPositionCallback);
   landing_enable_sub = nh.subscribe("/dji_landing/landing_enable", 1, landingEnableCallback );
   ros::Subscriber imu_subscriber = nh.subscribe("dji_sdk/imu", 100, imuMsgCallback);
+  ros::Subscriber velocitySub = nh.subscribe("dji_sdk/velocity", 100, &velocity_callback);
+
 
 
 
@@ -270,14 +278,20 @@ int main(int argc, char **argv)
         //double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
         //double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
 
-        setpoint_x = delta_x + local_x;
-        setpoint_y = delta_y + local_y;
+        setpoint_x = delta_x;
+        setpoint_y = delta_y;
+        x_state_msg.data = current_velocity.vector.x;
+        y_state_msg.data = current_velocity.vector.y;
+        ROS_INFO_ONCE("VISION\n");
         }
 
         else{
           setpoint_x = 0;
           setpoint_y = 0;
           curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
+          x_state_msg.data = local_x;
+          y_state_msg.data = local_y;
+          ROS_INFO_ONCE("GPS\n");
         }
         if(curr_error < 0.15){
           control_z_msg.data = -0.1;
@@ -295,8 +309,8 @@ int main(int argc, char **argv)
         setpoint_y_pub.publish(setpoint_y_msg);
         setpoint_yaw_pub.publish(setpoint_yaw_msg);
 
-        x_state_msg.data = local_x;
-        y_state_msg.data = local_y;
+        //x_state_msg.data = current_velocity.vector.x;
+        //y_state_msg.data = current_velocity.vector.y;
         z_state_msg.data = local_z;
         yaw_state_msg.data = yaw_state;
 
