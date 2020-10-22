@@ -127,7 +127,8 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "position_track_controller");
 	ros::NodeHandle nh;
-
+  ros::NodeHandle node_priv("~");
+  node_priv.param<double>("landing_height_threshold", landing_height_threshold, 1);
 	nh.param<std::string>("topic_from_controller", topic_from_controller, "/teamc/position_track_x/control_effort");
 
 	velocity_control_x_sub = nh.subscribe("/teamc/position_track_x/control_effort", 100, velocityControlEffortXCallback);
@@ -184,6 +185,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
+        ROS_INFO_STREAM("Landing Height: " << local_z << "\n");
 				if (land())
 				{
 					ROS_INFO_ONCE("Continue landing.");

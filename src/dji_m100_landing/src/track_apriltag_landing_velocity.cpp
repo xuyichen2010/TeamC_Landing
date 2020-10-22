@@ -78,12 +78,19 @@ double landing_center_threshold = 0.5;
 int flight_status;
 
 Tag *tag_36h11_0;
+Tag *tag_36h11_1;
+Tag *tag_36h11;
 
 double yaw_error;
+double error_threshold;
+double error_threshold_small_tag;
+double transition_height;
 
 std::string tag_36h11_detection_topic;
 
 bool found_36h11 = false;
+bool found_36h11_0 = false;
+bool found_36h11_1 = false;
 bool landing_enabled = false;
 
 std_msgs::Float64 setpoint_x_msg;
@@ -129,12 +136,18 @@ void apriltags36h11Callback(const apriltag_ros::AprilTagDetectionArray::ConstPtr
   }
   else
   {
+    found_36h11 = true;
     for(auto it = std::begin(apriltag_pos_msg->detections); it != std::end(apriltag_pos_msg->detections); ++ it)
     {
       if((*it).id[0] == 0)
       {
         tag_36h11_0->updateTagState((*it).pose.pose.pose);
-        found_36h11 = true;
+        found_36h11_0 = true;
+      }
+      else if((*it).id[0] == 1)
+      {
+        tag_36h11_1->updateTagState((*it).pose.pose.pose);
+        found_36h11_1 = true;
       }
     }
   }
@@ -191,6 +204,9 @@ int main(int argc, char **argv)
   ros::NodeHandle node_priv("~");
 
   node_priv.param<std::string>("tag_36h11_detection_topic", tag_36h11_detection_topic, "/tag_detections");
+  node_priv.param<double>("error_threshold", error_threshold, 0.10);
+  node_priv.param<double>("transition_height", transition_height, 1.3);
+  node_priv.param<double>("error_threshold_small_tag", error_threshold_small_tag, 0.05);
   node_priv.param<double>("landing_height_threshold", landing_height_threshold, 1);
   node_priv.param<double>("landing_center_threshold", landing_center_threshold, 0.5);
 
@@ -221,6 +237,10 @@ int main(int argc, char **argv)
   tag_36h11_0 = new Tag();
   // Set the translation between camera and landing center
   tag_36h11_0->setToLandingCenterTranslation(Eigen::Vector3d(0.0, 0.0, 0.0));
+
+  tag_36h11_1 = new Tag();
+  // Set the translation between camera and landing center
+  tag_36h11_1->setToLandingCenterTranslation(Eigen::Vector3d(0.0, 0.0, 0.0));
 
   //camera to drone transformation
   Eigen::Matrix3d camera_to_drone_transformation;
@@ -257,43 +277,47 @@ int main(int argc, char **argv)
       // Found apriltag, start landing
       control_z_msg.data = 0;
       double curr_error;
+      if (found_36h11_1 && local_z < transition_height){
+        tag_36h11 = tag_36h11_1;
+        ROS_INFO_ONCE("Tag 1\n");
+      }
+      else if (found_36h11_0){
+        tag_36h11 = tag_36h11_0;
+        ROS_INFO_ONCE("Tag 0\n");
+      }
+      else{
+        ROS_INFO_ONCE("NO Tag\n");
+      }
       if(found_36h11)
       {
-        ROS_INFO_ONCE("Found Apriltag, start landing.");
-
         // get the landing center position refer to the local frame
-        tag_36h11_0->calculateDroneFramePosition(camera_to_drone_transformation);
-        tag_36h11_0->calculateDroneFrameOrientation(camera_to_drone_transformation);
-        landing_center_position = tag_36h11_0->getLandingCenterPosition();
-
-        // get the landing center yaw error
-        yaw_error = (tag_36h11_0->getYawError())/ M_PI * 180 - 90;
+        tag_36h11->calculateDroneFramePosition(camera_to_drone_transformation);
+        tag_36h11->calculateDroneFrameOrientation(camera_to_drone_transformation);
+        landing_center_position = tag_36h11->getLandingCenterPosition();
 
         double yaw_angle_radian = (yaw_state/180)* M_PI;
         double delta_x = landing_center_position(0)*cos(yaw) - landing_center_position(1)*sin(yaw);
         double delta_y = landing_center_position(0)*sin(yaw) + landing_center_position(1)*cos(yaw);
 
         curr_error = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
-
-        //double old_x = landing_center_position(0)*cos(yaw_angle_radian) - landing_center_position(1)*sin(yaw_angle_radian);
-        //double old_y = landing_center_position(0)*sin(yaw_angle_radian) + landing_center_position(1)*cos(yaw_angle_radian);
-
         setpoint_x = delta_x;
         setpoint_y = delta_y;
-        x_state_msg.data = current_velocity.vector.x;
-        y_state_msg.data = current_velocity.vector.y;
         ROS_INFO_ONCE("VISION\n");
         }
 
         else{
-          setpoint_x = 0;
-          setpoint_y = 0;
+          setpoint_x = -local_x;
+          setpoint_y = -local_y;
           curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
-          x_state_msg.data = local_x;
-          y_state_msg.data = local_y;
           ROS_INFO_ONCE("GPS\n");
         }
-        if(curr_error < 0.15){
+        x_state_msg.data = current_velocity.vector.x;
+        y_state_msg.data = current_velocity.vector.y;
+        double curr_threshold = error_threshold;
+        if (found_36h11_1 && local_z < transition_height){
+          curr_threshold = error_threshold_small_tag;
+        }
+        if(curr_error < curr_threshold){
           control_z_msg.data = -0.1;
         }
         //setpoint_yaw = yaw_state + yaw_error;
