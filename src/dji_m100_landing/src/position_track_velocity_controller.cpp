@@ -40,11 +40,11 @@ ros::Subscriber landing_enable_sub;
 ros::Subscriber found_tag_sub;
 ros::Subscriber local_position_sub;
 ros::Subscriber flight_status_sub;
+ros::Subscriber z_state_sub;
 
 ros::Publisher ctrlVelYawPub;
 ros::Publisher ctrlRPYPub;
 
-// ros::ServiceClient velocity_control_service;
 ros::ServiceClient drone_task_service;
 
 double velocity_control_effort_x;
@@ -53,9 +53,6 @@ double control_effort_z;
 double velocity_control_effort_yaw;
 int flight_status;
 
-const double descending_speed = -0;
-//const double ascending_speed = 0.5;
-
 bool landing_enabled = false;
 bool found_tag = false;
 bool during_landing = false;
@@ -63,6 +60,7 @@ bool continue_landing = false;
 double local_z;
 double local_x;
 double local_y;
+double z_state;
 double landing_height_threshold = 1;
 
 std::string topic_from_controller;
@@ -88,11 +86,11 @@ void ControlEffortZCallback(std_msgs::Float64 control_effort_z_msg)
 {
 	control_effort_z = control_effort_z_msg.data;
 }
-/*
+
 void velocityControlEffortYawCallback(std_msgs::Float64 velocity_control_effort_yaw_msg)
 {
 	velocity_control_effort_yaw = velocity_control_effort_yaw_msg.data;
-}*/
+}
 
 void foundapriltagCallback(const std_msgs::Bool& found_tag_msg){
 	found_tag = found_tag_msg.data;
@@ -106,6 +104,11 @@ void landingEnableCallback(const std_msgs::Bool& landing_enable_msg)
 void flightStatusCallback(const std_msgs::UInt8& flight_status_msg)
 {
   flight_status = (int)flight_status_msg.data;
+}
+
+void zStateCallback(std_msgs::Float64 z_state_msg)
+{
+	z_state = z_state_msg.data;
 }
 
 bool land()
@@ -134,11 +137,12 @@ int main(int argc, char **argv)
 	velocity_control_x_sub = nh.subscribe("/teamc/position_track_x/control_effort", 100, velocityControlEffortXCallback);
 	velocity_control_y_sub = nh.subscribe("/teamc/position_track_y/control_effort", 100, velocityControlEffortYCallback);
 	control_z_sub = nh.subscribe("/teamc/position_track_z/control_effort", 100, ControlEffortZCallback);
-	//velocity_control_yaw_sub = nh.subscribe("/teamc/position_track_yaw/control_effort", 100, velocityControlEffortYawCallback);
+	velocity_control_yaw_sub = nh.subscribe("/teamc/position_track_yaw/control_effort", 100, velocityControlEffortYawCallback);
   local_position_sub = nh.subscribe("dji_sdk/local_position", 100, localPositionCallback);
 	landing_enable_sub = nh.subscribe("/dji_landing/landing_enable", 1, landingEnableCallback );
 	found_tag_sub = nh.subscribe("/teamc/found_april_tag_pub", 1, foundapriltagCallback );
   flight_status_sub = nh.subscribe("/dji_sdk/flight_status", 1, flightStatusCallback);
+  z_state_sub = nh.subscribe("/teamc/position_track_z/state", 1, zStateCallback);
 
 	drone_task_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
 
@@ -161,7 +165,11 @@ int main(int argc, char **argv)
 		{
 			ROS_INFO_ONCE("Landing is enabled.");
 			// Found apriltag, start landing
-		  if(local_z > landing_height_threshold)
+      double curr_height = local_z;
+      if (found_tag){
+        curr_height = -z_state;
+      }
+		  if(curr_height > landing_height_threshold)
 			 {
 
 				ROS_INFO_ONCE("Found Apriltag, start landing.");
@@ -173,7 +181,7 @@ int main(int argc, char **argv)
         controlVel.axes.push_back(velocity_control_effort_x);
         controlVel.axes.push_back(velocity_control_effort_y);
         controlVel.axes.push_back(control_effort_z);
-        controlVel.axes.push_back(0);
+        controlVel.axes.push_back(velocity_control_effort_yaw);
 
         ctrlVelYawPub.publish(controlVel);
 
@@ -185,7 +193,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-        ROS_INFO_STREAM("Landing Height: " << local_z << "\n");
+        ROS_INFO_STREAM("Landing Height: " << z_state << "\n");
 				if (land())
 				{
 					ROS_INFO_ONCE("Continue landing.");

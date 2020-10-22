@@ -22,6 +22,7 @@ rosrun dji_m100_gazebo dji_m100_pcsim_gazebo_bridge
  
 roslaunch dji_m100_landing tunning.launch 
 
+ssh teamc@192.168.0.116
 
 Landing:
 roslaunch dji_m100_landing apriltag_track_landing.launch

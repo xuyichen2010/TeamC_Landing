@@ -81,7 +81,9 @@ Tag *tag_36h11_0;
 Tag *tag_36h11_1;
 Tag *tag_36h11;
 
-double yaw_error;
+double yaw_error = 0.0;
+double offset_x;
+double offset_y;
 double error_threshold;
 double error_threshold_small_tag;
 double transition_height;
@@ -105,6 +107,7 @@ std_msgs::Float64 z_state_msg;
 std_msgs::Float64 yaw_state_msg;
 
 geometry_msgs::Vector3Stamped current_velocity;
+sensor_msgs::Imu current_imu;
 
 
 tf::Quaternion tmp_;
@@ -122,6 +125,7 @@ void velocity_callback(const geometry_msgs::Vector3Stamped::ConstPtr& msg){
 
 void imuMsgCallback(const sensor_msgs::Imu& imu_msg)
 {
+  current_imu = imu_msg;
   tf::quaternionMsgToTF(imu_msg.orientation, tmp_);
   tf::Matrix3x3(tmp_).getRPY(roll, pitch, yaw);
 }
@@ -207,6 +211,8 @@ int main(int argc, char **argv)
   node_priv.param<double>("error_threshold", error_threshold, 0.10);
   node_priv.param<double>("transition_height", transition_height, 1.3);
   node_priv.param<double>("error_threshold_small_tag", error_threshold_small_tag, 0.05);
+  node_priv.param<double>("offset_x", offset_x, 0.0);
+  node_priv.param<double>("offset_y", offset_y, 0.0);
   node_priv.param<double>("landing_height_threshold", landing_height_threshold, 1);
   node_priv.param<double>("landing_center_threshold", landing_center_threshold, 0.5);
 
@@ -236,11 +242,11 @@ int main(int argc, char **argv)
 
   tag_36h11_0 = new Tag();
   // Set the translation between camera and landing center
-  tag_36h11_0->setToLandingCenterTranslation(Eigen::Vector3d(0.0, 0.0, 0.0));
+  tag_36h11_0->setToLandingCenterTranslation(Eigen::Vector3d(offset_x, offset_y, 0.0));
 
   tag_36h11_1 = new Tag();
   // Set the translation between camera and landing center
-  tag_36h11_1->setToLandingCenterTranslation(Eigen::Vector3d(0.0, 0.0, 0.0));
+  tag_36h11_1->setToLandingCenterTranslation(Eigen::Vector3d(offset_x, offset_y, 0.0));
 
   //camera to drone transformation
   Eigen::Matrix3d camera_to_drone_transformation;
@@ -250,7 +256,7 @@ int main(int argc, char **argv)
 
   Eigen::Vector3d landing_center_position;
 
-  ros::Rate loop_rate(100);
+  ros::Rate loop_rate(40);
 
   ros::spinOnce();
 
@@ -294,6 +300,7 @@ int main(int argc, char **argv)
         tag_36h11->calculateDroneFramePosition(camera_to_drone_transformation);
         tag_36h11->calculateDroneFrameOrientation(camera_to_drone_transformation);
         landing_center_position = tag_36h11->getLandingCenterPosition();
+        yaw_error = (tag_36h11_0->getYawError())/ M_PI * 180 + 90;
 
         double yaw_angle_radian = (yaw_state/180)* M_PI;
         double delta_x = landing_center_position(0)*cos(yaw) - landing_center_position(1)*sin(yaw);
@@ -320,10 +327,8 @@ int main(int argc, char **argv)
         if(curr_error < curr_threshold){
           control_z_msg.data = -0.1;
         }
-        //setpoint_yaw = yaw_state + yaw_error;
-        setpoint_yaw = 90;
 
-        setpoint_yaw_msg.data = setpoint_yaw;
+        setpoint_yaw_msg.data = yaw_error;
         setpoint_x_msg.data = setpoint_x;
         setpoint_y_msg.data = setpoint_y;
 
@@ -335,8 +340,8 @@ int main(int argc, char **argv)
 
         //x_state_msg.data = current_velocity.vector.x;
         //y_state_msg.data = current_velocity.vector.y;
-        z_state_msg.data = local_z;
-        yaw_state_msg.data = yaw_state;
+        z_state_msg.data = landing_center_position(2);
+        yaw_state_msg.data = current_imu.angular_velocity.z;
 
         x_state_pub.publish(x_state_msg);
         y_state_pub.publish(y_state_msg);
