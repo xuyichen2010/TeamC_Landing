@@ -169,6 +169,7 @@ int main(int argc, char **argv)
       if (found_tag){
         curr_height = -z_state;
       }
+      ROS_INFO_STREAM("GPS_height: " << local_z << " visual_height: " << -z_state);
 		  if(curr_height > landing_height_threshold)
 			 {
 
