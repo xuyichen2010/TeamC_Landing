@@ -166,7 +166,7 @@ int main(int argc, char **argv)
 			ROS_INFO_ONCE("Landing is enabled.");
 			// Found apriltag, start landing
       double curr_height = local_z;
-      if (found_tag){
+      if (found_tag && z_state < -0.01){
         curr_height = -z_state;
       }
       ROS_INFO_STREAM("GPS_height: " << local_z << " visual_height: " << -z_state);

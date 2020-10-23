@@ -7,8 +7,13 @@
         pkg="rqt_plot"
         type="rqt_plot"
         args="/teamc/position_track_yaw/setpoint_filtered  /teamc/position_track_yaw/state"/>
+  <!--
+  <node name="height_plot"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/teamc/position_track_z/state  /teamc/position_track_yaw/state"/>
 
-<!--
+
   <node name="vel_y_plot"
         pkg="rqt_plot"
         type="rqt_plot"
