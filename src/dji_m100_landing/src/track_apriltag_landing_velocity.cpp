@@ -87,6 +87,7 @@ double offset_y;
 double error_threshold;
 double error_threshold_small_tag;
 double transition_height;
+double gps_height_trheshold;
 
 std::string tag_36h11_detection_topic;
 
@@ -215,6 +216,7 @@ int main(int argc, char **argv)
   node_priv.param<double>("offset_y", offset_y, 0.0);
   node_priv.param<double>("landing_height_threshold", landing_height_threshold, 1);
   node_priv.param<double>("landing_center_threshold", landing_center_threshold, 0.5);
+  node_priv.param<double>("GPS_height_threshold", gps_height_trheshold, 4.0);
 
   print_parameters();
 
@@ -310,23 +312,27 @@ int main(int argc, char **argv)
         setpoint_x = delta_x;
         setpoint_y = delta_y;
         ROS_INFO_ONCE("VISION\n");
-        }
-
-        else{
-          setpoint_x = -local_x;
-          setpoint_y = -local_y;
-          curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
-          ROS_INFO_ONCE("GPS\n");
-        }
-        x_state_msg.data = current_velocity.vector.x;
-        y_state_msg.data = current_velocity.vector.y;
-        double curr_threshold = error_threshold;
-        if (found_36h11_1 && local_z < transition_height){
+	double curr_threshold = error_threshold;
+        if (local_z < transition_height){
           curr_threshold = error_threshold_small_tag;
         }
         if(curr_error < curr_threshold){
           control_z_msg.data = -0.1;
         }
+      }
+
+        else{
+          setpoint_x = -local_x;
+          setpoint_y = -local_y;
+          curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
+          if (local_z < gps_height_trheshold){
+               control_z_msg.data = 0.1;
+          }
+          ROS_INFO_ONCE("GPS\n");
+      }
+        x_state_msg.data = current_velocity.vector.x;
+        y_state_msg.data = current_velocity.vector.y;
+        
 
         setpoint_yaw_msg.data = yaw_error;
         setpoint_x_msg.data = setpoint_x;
