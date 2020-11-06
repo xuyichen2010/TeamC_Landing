@@ -139,9 +139,9 @@ int main(int argc, char **argv)
 	control_z_sub = nh.subscribe("/teamc/position_track_z/control_effort", 100, ControlEffortZCallback);
 	velocity_control_yaw_sub = nh.subscribe("/teamc/position_track_yaw/control_effort", 100, velocityControlEffortYawCallback);
   local_position_sub = nh.subscribe("dji_sdk/local_position", 100, localPositionCallback);
-	landing_enable_sub = nh.subscribe("/dji_landing/landing_enable", 1, landingEnableCallback );
+	landing_enable_sub = nh.subscribe("dji_landing/landing_enable", 1, landingEnableCallback );
 	found_tag_sub = nh.subscribe("/teamc/found_april_tag_pub", 1, foundapriltagCallback );
-  flight_status_sub = nh.subscribe("/dji_sdk/flight_status", 1, flightStatusCallback);
+  flight_status_sub = nh.subscribe("dji_sdk/flight_status", 1, flightStatusCallback);
   z_state_sub = nh.subscribe("/teamc/position_track_z/state", 1, zStateCallback);
 
 	drone_task_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
@@ -183,11 +183,11 @@ int main(int argc, char **argv)
         controlVel.axes.push_back(velocity_control_effort_y);
         controlVel.axes.push_back(control_effort_z);
         controlVel.axes.push_back(velocity_control_effort_yaw);
-
+        //controlVel.axes.push_back(0);
         ctrlVelYawPub.publish(controlVel);
 
 				//ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
-				//ROS_INFO_STREAM("effort_z: " << descending_speed << " effort_yaw: " << velocity_control_effort_yaw);
+				ROS_INFO_STREAM(" effort_yaw: " << velocity_control_effort_yaw);
 
 				during_landing = true;
 				continue_landing = true;

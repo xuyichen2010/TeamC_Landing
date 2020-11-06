@@ -84,6 +84,8 @@ Tag *tag_36h11;
 double yaw_error = 0.0;
 double offset_x;
 double offset_y;
+double offset_x_small;
+double offset_y_small;
 double error_threshold;
 double error_threshold_small_tag;
 double transition_height;
@@ -214,6 +216,8 @@ int main(int argc, char **argv)
   node_priv.param<double>("error_threshold_small_tag", error_threshold_small_tag, 0.05);
   node_priv.param<double>("offset_x", offset_x, 0.0);
   node_priv.param<double>("offset_y", offset_y, 0.0);
+  node_priv.param<double>("offset_x_small", offset_x_small, 0.0);
+  node_priv.param<double>("offset_y_small", offset_y_small, 0.0);
   node_priv.param<double>("landing_height_threshold", landing_height_threshold, 1);
   node_priv.param<double>("landing_center_threshold", landing_center_threshold, 0.5);
   node_priv.param<double>("GPS_height_threshold", gps_height_trheshold, 4.0);
@@ -232,10 +236,10 @@ int main(int argc, char **argv)
 
   apriltags_36h11_sub = nh.subscribe(tag_36h11_detection_topic, 1, apriltags36h11Callback);
   local_position_sub = nh.subscribe("dji_sdk/local_position", 10, localPositionCallback);
-  attitude_quaternion_sub = nh.subscribe("/dji_sdk/attitude", 1, attitudeQuaternionCallback );
-  flight_status_sub = nh.subscribe("/dji_sdk/flight_status", 1, flightStatusCallback);
-  global_position_sub = nh.subscribe("/dji_sdk/gps_position", 10, globalPositionCallback);
-  landing_enable_sub = nh.subscribe("/dji_landing/landing_enable", 1, landingEnableCallback );
+  attitude_quaternion_sub = nh.subscribe("dji_sdk/attitude", 1, attitudeQuaternionCallback );
+  flight_status_sub = nh.subscribe("dji_sdk/flight_status", 1, flightStatusCallback);
+  global_position_sub = nh.subscribe("dji_sdk/gps_position", 10, globalPositionCallback);
+  landing_enable_sub = nh.subscribe("dji_landing/landing_enable", 1, landingEnableCallback );
   ros::Subscriber imu_subscriber = nh.subscribe("dji_sdk/imu", 100, imuMsgCallback);
   ros::Subscriber velocitySub = nh.subscribe("dji_sdk/velocity", 100, &velocity_callback);
 
@@ -248,7 +252,7 @@ int main(int argc, char **argv)
 
   tag_36h11_1 = new Tag();
   // Set the translation between camera and landing center
-  tag_36h11_1->setToLandingCenterTranslation(Eigen::Vector3d(offset_x, offset_y, 0.0));
+  tag_36h11_1->setToLandingCenterTranslation(Eigen::Vector3d(offset_x_small, offset_y_small, 0.0));
 
   //camera to drone transformation
   Eigen::Matrix3d camera_to_drone_transformation;
@@ -334,9 +338,13 @@ int main(int argc, char **argv)
         y_state_msg.data = current_velocity.vector.y;
         
 
-        setpoint_yaw_msg.data = yaw_error;
-        setpoint_x_msg.data = setpoint_x;
-        setpoint_y_msg.data = setpoint_y;
+        //setpoint_yaw_msg.data = yaw_error;
+        //setpoint_x_msg.data = setpoint_x;
+        //setpoint_y_msg.data = setpoint_y;
+	
+	setpoint_yaw_msg.data = 90.0;
+	setpoint_x_msg.data = 0.0;
+        setpoint_y_msg.data = 0.0;
 
         z_control_pub.publish(control_z_msg);
 

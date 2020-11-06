@@ -2,11 +2,11 @@
     <node name="track_apriltag_landing_velocity" pkg="dji_m100_landing" type="track_apriltag_landing_velocity" output="screen" >
       <param name="apriltags_36h11_sub" value="/tag_detections" />
       <param name="error_threshold" value="0.10" />
-      <param name="GPS_height_threshold" value="5.0" />
+      <param name="GPS_height_threshold" value="3.0" />
       <param name="error_threshold_small_tag" value="0.09" />
-      <param name="transition_height" value="1.3" />
-      <param name="offset_x" value="0.08" />
-      <param name="offset_y" value="0.1" />
+      <param name="transition_height" value="1.7" />
+      <param name="offset_x" value="0.25" />
+      <param name="offset_y" value="-0.1" />
     </node>
 
     <node pkg="dji_m100_landing" type="position_track_velocity_controller" name="position_track_velocity_controller_node" output="screen">
@@ -68,7 +68,7 @@
       <param name="vx" value="0.0" />
       <param name="vy" value="0.0" />
       <param name="vz" value="0.4" />
-      <param name="vyaw" value="0.0" />
+      <param name="vyaw" value="0.1" />
     </node>
 
 
@@ -108,9 +108,9 @@
 
     <node ns="dji_m100_landing" name="position_track_pid_yaw_controller" pkg="pid" type="controller" >
       <param name="node_name" value="apriltag_tracking_yaw_controller" />
-      <param name="Kp" value="0.0013" />
-      <param name="Ki" value="0.0" />
-      <param name="Kd" value="0.000" />
+      <param name="Kp" value="0.0003" />
+      <param name="Ki" value="0.000008" />
+      <param name="Kd" value="0.00008" />
       <param name="converge_threshold" value="1" />
       <param name="upper_limit" value="30" />
       <param name="lower_limit" value="-30" />
