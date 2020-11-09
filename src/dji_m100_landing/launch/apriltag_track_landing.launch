@@ -4,9 +4,11 @@
       <param name="error_threshold" value="0.10" />
       <param name="GPS_height_threshold" value="3.0" />
       <param name="error_threshold_small_tag" value="0.09" />
-      <param name="transition_height" value="1.7" />
-      <param name="offset_x" value="0.25" />
+      <param name="transition_height" value="1.3" />
+      <param name="offset_x" value="0.17" />
       <param name="offset_y" value="-0.1" />
+      <param name="offset_x_small" value="0.04" />
+      <param name="offset_y_small" value="-0.05" />
     </node>
 
     <node pkg="dji_m100_landing" type="position_track_velocity_controller" name="position_track_velocity_controller_node" output="screen">
@@ -37,6 +39,7 @@
   		<param name="x0" value="0" />
     </node>
 
+
     <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
       <param name="video_device" value="/dev/video0" />
       <param name="image_width" value="640" />
@@ -51,25 +54,25 @@
 		<arg name="camera_info_topic" default="/usb_cam/camera_info" />
 		<arg name="camera_frame" default="usb_cam" />
     </include>
- 
 
 
-    <!--
+
+ <!--
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
  		<arg name="image_rect_topic" default="/guidance_down/left/image_rect" />
 		<arg name="camera_info_topic" default="/guidance_down/left/camera_info" />
 		<arg name="camera_frame" default="guidance_down" />
     </include>
 
-    <node pkg="tf" type="static_transform_publisher" name="usb_to_base" args="0 0 -0.1 -0.7071068 0.7071068 0 0 /usb_cam /base_link 100"/>
 -->    
 
     <node pkg="landing_starter" type="landing_starter" name="landing_starter" output="screen">
       <param name="vx" value="0.0" />
       <param name="vy" value="0.0" />
       <param name="vz" value="0.4" />
-      <param name="vyaw" value="0.1" />
+      <param name="vyaw" value="0.0" />
     </node>
+
 
 
     <node ns="dji_m100_landing" name="position_track_pid_velocity_x_controller" pkg="pid" type="controller">

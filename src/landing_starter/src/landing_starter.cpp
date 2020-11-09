@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
   ros::Subscriber flightStatusSub = nh.subscribe("dji_sdk/flight_status", 10, &flight_status_callback);
   ros::Subscriber gpsSub          = nh.subscribe("dji_sdk/gps_position", 10, &gps_position_callback);
-	ros::Subscriber landing_enable_sub = nh.subscribe("/dji_landing/landing_enable", 1, landingEnableCallback );
+	ros::Subscriber landing_enable_sub = nh.subscribe("dji_landing/landing_enable", 1, landingEnableCallback );
 	ros::Subscriber localPosition = nh.subscribe("dji_sdk/local_position", 100, &local_position_callback);
 
   // Basic services

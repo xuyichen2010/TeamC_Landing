@@ -291,14 +291,14 @@ int main(int argc, char **argv)
       double curr_error;
       if (found_36h11_1 && local_z < transition_height){
         tag_36h11 = tag_36h11_1;
-        ROS_INFO_ONCE("Tag 1\n");
+        ROS_INFO_STREAM("Tag 1\n");
       }
       else if (found_36h11_0){
         tag_36h11 = tag_36h11_0;
-        ROS_INFO_ONCE("Tag 0\n");
+        ROS_INFO_STREAM("Tag 0\n");
       }
       else{
-        ROS_INFO_ONCE("NO Tag\n");
+        ROS_INFO_STREAM("NO Tag\n");
       }
       if(found_36h11)
       {
@@ -306,7 +306,7 @@ int main(int argc, char **argv)
         tag_36h11->calculateDroneFramePosition(camera_to_drone_transformation);
         tag_36h11->calculateDroneFrameOrientation(camera_to_drone_transformation);
         landing_center_position = tag_36h11->getLandingCenterPosition();
-        yaw_error = (tag_36h11_0->getYawError())/ M_PI * 180 + 90;
+        yaw_error = (tag_36h11->getYawError())/ M_PI * 180 + 90;
 
         double yaw_angle_radian = (yaw_state/180)* M_PI;
         double delta_x = landing_center_position(0)*cos(yaw) - landing_center_position(1)*sin(yaw);
@@ -338,13 +338,13 @@ int main(int argc, char **argv)
         y_state_msg.data = current_velocity.vector.y;
         
 
-        //setpoint_yaw_msg.data = yaw_error;
-        //setpoint_x_msg.data = setpoint_x;
-        //setpoint_y_msg.data = setpoint_y;
+        setpoint_yaw_msg.data = yaw_error;
+        setpoint_x_msg.data = setpoint_x;
+        setpoint_y_msg.data = setpoint_y;
 	
-	setpoint_yaw_msg.data = 90.0;
-	setpoint_x_msg.data = 0.0;
-        setpoint_y_msg.data = 0.0;
+	//setpoint_yaw_msg.data = 90.0;
+	//setpoint_x_msg.data = 0.0;
+       // setpoint_y_msg.data = 0.0;
 
         z_control_pub.publish(control_z_msg);
 

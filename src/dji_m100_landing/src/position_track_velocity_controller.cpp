@@ -187,12 +187,12 @@ int main(int argc, char **argv)
         ctrlVelYawPub.publish(controlVel);
 
 				//ROS_INFO_STREAM("effort_x: " << velocity_control_effort_x << " effort_y: " << velocity_control_effort_y);
-				ROS_INFO_STREAM(" effort_yaw: " << velocity_control_effort_yaw);
+				//ROS_INFO_STREAM(" effort_yaw: " << velocity_control_effort_yaw);
 
 				during_landing = true;
 				continue_landing = true;
 			}
-			else
+			else if (found_tag)
 			{
         ROS_INFO_STREAM("Landing Height: " << z_state << "\n");
 				if (land())
