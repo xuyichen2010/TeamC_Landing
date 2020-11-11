@@ -22,7 +22,7 @@
 #include "dji_sdk/dji_sdk.h"
 #include <geometry_msgs/PointStamped.h>
 
-void landingEnableCallback(const std_msgs::Bool& landing_enable_msg);
+void starterEnableCallback(const std_msgs::Bool& starter_enable_msg);
 
 void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg);
 

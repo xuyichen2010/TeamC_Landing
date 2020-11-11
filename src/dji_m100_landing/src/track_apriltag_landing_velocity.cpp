@@ -79,6 +79,7 @@ int flight_status;
 
 Tag *tag_36h11_0;
 Tag *tag_36h11_1;
+Tag *tag_36h11_2;
 Tag *tag_36h11;
 
 double yaw_error = 0.0;
@@ -86,6 +87,8 @@ double offset_x;
 double offset_y;
 double offset_x_small;
 double offset_y_small;
+double offset_x_big;
+double offset_y_big;
 double error_threshold;
 double error_threshold_small_tag;
 double transition_height;
@@ -96,6 +99,7 @@ std::string tag_36h11_detection_topic;
 bool found_36h11 = false;
 bool found_36h11_0 = false;
 bool found_36h11_1 = false;
+bool found_36h11_2 = false;
 bool landing_enabled = false;
 
 std_msgs::Float64 setpoint_x_msg;
@@ -156,8 +160,19 @@ void apriltags36h11Callback(const apriltag_ros::AprilTagDetectionArray::ConstPtr
         tag_36h11_1->updateTagState((*it).pose.pose.pose);
         found_36h11_1 = true;
       }
+      else if((*it).id[0] == 2)
+      {
+        tag_36h11_2->updateTagState((*it).pose.pose.pose);
+        found_36h11_2 = true;
+      }
     }
   }
+}
+
+void landingCoordCallback(const geometry_msgs::Point::ConstPtr& local_position_msg)
+{
+  target_x = local_position_msg->x;
+  target_y = local_position_msg->y;
 }
 
 void localPositionCallback(const geometry_msgs::PointStamped::ConstPtr& local_position_msg)
@@ -218,6 +233,8 @@ int main(int argc, char **argv)
   node_priv.param<double>("offset_y", offset_y, 0.0);
   node_priv.param<double>("offset_x_small", offset_x_small, 0.0);
   node_priv.param<double>("offset_y_small", offset_y_small, 0.0);
+  node_priv.param<double>("offset_x_big", offset_x_big, 0.0);
+  node_priv.param<double>("offset_y_big", offset_y_big, 0.0);
   node_priv.param<double>("landing_height_threshold", landing_height_threshold, 1);
   node_priv.param<double>("landing_center_threshold", landing_center_threshold, 0.5);
   node_priv.param<double>("GPS_height_threshold", gps_height_trheshold, 4.0);
@@ -242,6 +259,7 @@ int main(int argc, char **argv)
   landing_enable_sub = nh.subscribe("dji_landing/landing_enable", 1, landingEnableCallback );
   ros::Subscriber imu_subscriber = nh.subscribe("dji_sdk/imu", 100, imuMsgCallback);
   ros::Subscriber velocitySub = nh.subscribe("dji_sdk/velocity", 100, &velocity_callback);
+  ros::Subscriber landingCoordSub = nh.subscribe("dji_landing/landing_coord", 1, &landingCoordCallback);
 
 
 
@@ -251,8 +269,10 @@ int main(int argc, char **argv)
   tag_36h11_0->setToLandingCenterTranslation(Eigen::Vector3d(offset_x, offset_y, 0.0));
 
   tag_36h11_1 = new Tag();
-  // Set the translation between camera and landing center
   tag_36h11_1->setToLandingCenterTranslation(Eigen::Vector3d(offset_x_small, offset_y_small, 0.0));
+
+  tag_36h11_2 = new Tag();
+  tag_36h11_2->setToLandingCenterTranslation(Eigen::Vector3d(offset_x_big, offset_y_big, 0.0));
 
   //camera to drone transformation
   Eigen::Matrix3d camera_to_drone_transformation;
@@ -297,6 +317,10 @@ int main(int argc, char **argv)
         tag_36h11 = tag_36h11_0;
         ROS_INFO_STREAM("Tag 0\n");
       }
+      else if (found_36h11_2){
+        tag_36h11 = tag_36h11_2;
+        ROS_INFO_STREAM("Tag 2\n");
+      }
       else{
         ROS_INFO_STREAM("NO Tag\n");
       }
@@ -326,11 +350,13 @@ int main(int argc, char **argv)
       }
 
         else{
-          setpoint_x = -local_x;
-          setpoint_y = -local_y;
+          setpoint_x = target_x -local_x;
+          setpoint_y = target_y -local_y;
+	  //setpoint_x = 0;
+	  //setpoint_y = 0;
           curr_error = sqrt(pow(local_x, 2) + pow(local_y, 2));
           if (local_z < gps_height_trheshold){
-               control_z_msg.data = 0.1;
+               control_z_msg.data = 0.2;
           }
           ROS_INFO_ONCE("GPS\n");
       }

@@ -15,19 +15,23 @@ ros::ServiceClient drone_task_service;
 ros::ServiceClient query_version_service;
 
 ros::Publisher ctrlVelYawPub;
+ros::Publisher landingEnablePub;
 
 // global variables for subscribed topics
 uint8_t flight_status = 255;
 uint8_t current_gps_health = 0;
 sensor_msgs::NavSatFix current_gps_position;
-bool landing_enabled = false;
+bool starter_enabled = false;
 bool destination_reached = false;
+bool landing_enabled = false;
 geometry_msgs::PointStamped local_position;
 
 double vx = 0;
 double vy = 0;
 double vz = 0.4;
 double vyaw = 0;
+double height_threshold;
+bool control_obtained = false;
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "landing_starter_node");
@@ -39,11 +43,12 @@ int main(int argc, char** argv) {
   node_priv.param<double>("vy", vy, 0);
   node_priv.param<double>("vz", vz, 0.4);
   node_priv.param<double>("vyaw", vyaw, 0);
+  node_priv.param<double>("height_threshold", height_threshold, 2.5);
 
   ros::Subscriber flightStatusSub = nh.subscribe("dji_sdk/flight_status", 10, &flight_status_callback);
   ros::Subscriber gpsSub          = nh.subscribe("dji_sdk/gps_position", 10, &gps_position_callback);
-	ros::Subscriber landing_enable_sub = nh.subscribe("dji_landing/landing_enable", 1, landingEnableCallback );
-	ros::Subscriber localPosition = nh.subscribe("dji_sdk/local_position", 100, &local_position_callback);
+  ros::Subscriber starter_enable_sub = nh.subscribe("dji_landing/starter_enable", 1, starterEnableCallback );
+  ros::Subscriber localPosition = nh.subscribe("dji_sdk/local_position", 100, &local_position_callback);
 
   // Basic services
   query_version_service      = nh.serviceClient<dji_sdk::QueryDroneVersion>("dji_sdk/query_drone_version");
@@ -53,40 +58,39 @@ int main(int argc, char** argv) {
 
   //Publishers
   ctrlVelYawPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_ENUvelocity_yawrate", 100);
-
-  bool obtain_control_result = obtain_control();
-  bool takeoff_result;
-  if (!set_local_position())
-  {
-    ROS_ERROR("GPS health insufficient - No local frame reference for height. Exiting.");
-    return 1;
-  }
-
-
-  ROS_INFO("M100 taking off!");
-  takeoff_result = M100monitoredTakeoff();
-  if(takeoff_result) {
-    ROS_INFO("Take off successful!");
-  }
-  ros::Rate r(30.0);
-  while(nh.ok() && !landing_enabled && !destination_reached)
-	{
-		ros::spinOnce();
-    sensor_msgs::Joy controlVelYaw;
-    controlVelYaw.axes.push_back(vx);
-    controlVelYaw.axes.push_back(vy);
-    controlVelYaw.axes.push_back(vz);
-    controlVelYaw.axes.push_back(vyaw);
-    ctrlVelYawPub.publish(controlVelYaw);
+  landingEnablePub = nh.advertise<std_msgs::Bool>("dji_landing/landing_enable", 1);
+  
+  ros::Rate r(10.0);
+  while(nh.ok()) {
+    ros::spinOnce();
+    if (destination_reached){
+        std_msgs::Bool reached;
+        reached.data = true;
+        landingEnablePub.publish(reached);
+        ROS_INFO_ONCE("starter finished \n");
+        break;
+    }
+    if (starter_enabled){
+	if (!control_obtained){
+            //obtain_control();
+            control_obtained = true;
+        }
+        ROS_INFO_ONCE("starter_enabled \n");
+        sensor_msgs::Joy controlVelYaw;
+        controlVelYaw.axes.push_back(vx);
+        controlVelYaw.axes.push_back(vy);
+        controlVelYaw.axes.push_back(vz);
+        controlVelYaw.axes.push_back(vyaw);
+    	ctrlVelYawPub.publish(controlVelYaw);
+    }
     r.sleep();
   }
-
   return 0;
 }
 
 void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg) {
   local_position = *msg;
-  if (local_position.point.z >= 2.5){
+  if (local_position.point.z >= height_threshold){
         destination_reached = true;
       }
 }
@@ -170,9 +174,9 @@ bool M100monitoredTakeoff() {
     return true;
   }
 
-  void landingEnableCallback(const std_msgs::Bool& landing_enable_msg)
+  void starterEnableCallback(const std_msgs::Bool& starter_enable_msg)
   {
-  	landing_enabled = landing_enable_msg.data;
+  	starter_enabled = starter_enable_msg.data;
   }
 
 bool set_local_position() {

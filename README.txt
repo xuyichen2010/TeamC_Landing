@@ -33,3 +33,7 @@ rostopic pub -r 10 dji_landing/landing_enable std_msgs/Bool 'true'
 About Gains:
 p
 d: Greater or equal to 0.25 will fuck up everything
+
+
+Full program:
+
