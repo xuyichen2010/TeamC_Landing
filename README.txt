@@ -1,3 +1,12 @@
+A stack allowing a DJI M100 to autonomously tracking and landing on a stationary platform (on top of a UGV).
+A RGB Webcam on the bottom of the UAV is used for tracking the Apriltag on top of the platfrom for pose estimation.
+PID controllers for x, y and yaw are used for assigning velocity commends to the UAV.
+The alogrithm has been field-tested multiple time with a DJI M100 and a positional error < 8cm.
+Video link: https://drive.google.com/file/d/1vrBGbGLHSCLAhbJdhI3T8VIfdd-TrNvk/view?usp=sharing
+The FVD branch is our final version of the work.
+
+
+
 source devel_isolated/pointcloud_to_laserscan/setup.bash
 
 
